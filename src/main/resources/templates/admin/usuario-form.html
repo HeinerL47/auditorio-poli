@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Usuario - Auditorio Poligran</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="/images/poli-logo.jpg" alt="Politecnico Grancolombiano"/>
+    <div>
+      <h1 th:text="${modo == 'crear'} ? 'Crear usuario' : 'Editar usuario'"></h1>
+      <small>Politecnico Grancolombiano</small>
+    </div>
+  </div>
+  <nav><a href="/admin/usuarios">Volver a la lista</a></nav>
+</header>
+<main>
+  <div th:if="${error}" class="error" th:text="${error}"></div>
+
+  <div class="card">
+    <form th:action="${modo == 'crear'} ? '/admin/usuarios/nuevo' : @{|/admin/usuarios/${usuario.id}/editar|}"
+          method="post">
+
+      <label>Nombre completo *</label>
+      <input type="text" name="nombre" th:value="${usuario.nombre}" required/>
+
+      <label>Documento de identidad *</label>
+      <input type="text" name="documento" th:value="${usuario.documento}"
+             th:readonly="${modo != 'crear'}" required/>
+
+      <label>Correo *</label>
+      <input type="email" name="correo" th:value="${usuario.correo}"
+             th:readonly="${modo != 'crear'}" required/>
+      <small style="color:#666">
+        Internos: debe terminar en <b>@poligran.edu.co</b><br/>
+        Externos: cualquier otro dominio
+      </small>
+
+      <label>Telefono</label>
+      <input type="text" name="telefono" th:value="${usuario.telefono}"/>
+
+      <label>Organizacion / Dependencia</label>
+      <input type="text" name="organizacion" th:value="${usuario.organizacion}"/>
+
+      <label th:if="${modo == 'crear'}">Contrasena inicial *</label>
+      <input th:if="${modo == 'crear'}" type="password" name="password" minlength="6" required/>
+      <small th:if="${modo == 'crear'}" style="color:#666">Minimo 6 caracteres. El usuario podra cambiarla luego.</small>
+
+      <label>Rol *</label>
+      <select name="rol" id="rol" required onchange="toggleTipo()">
+        <option value="">-- Seleccione --</option>
+        <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"
+                th:selected="${usuario.rol != null and usuario.rol == r}"></option>
+      </select>
+
+      <label id="lblTipo">Tipo de solicitante *</label>
+      <select name="tipoSolicitante" id="tipoSolicitante">
+        <option value="">-- Seleccione --</option>
+        <option th:each="t : ${tipos}" th:value="${t}" th:text="${t}"
+                th:selected="${usuario.tipoSolicitante != null and usuario.tipoSolicitante == t}"></option>
+      </select>
+      <small style="color:#666">
+        Solo aplica si el rol es SOLICITANTE.<br/>
+        DOCENTE / ADMINISTRATIVO: usuarios internos del Politecnico (sin costo).<br/>
+        EXTERNO: persona u organizacion ajena al Politecnico (paga por hora).
+      </small>
+
+      <br/><br/>
+      <button class="btn" type="submit"
+              th:text="${modo == 'crear'} ? 'Crear usuario' : 'Guardar cambios'"></button>
+    </form>
+  </div>
+</main>
+<script>
+  function toggleTipo() {
+    var rol = document.getElementById('rol').value;
+    var sel = document.getElementById('tipoSolicitante');
+    var lbl = document.getElementById('lblTipo');
+    var esSol = rol === 'SOLICITANTE';
+    sel.style.display = esSol ? '' : 'none';
+    lbl.style.display = esSol ? '' : 'none';
+    sel.required = esSol;
+    if (!esSol) sel.value = '';
+  }
+  toggleTipo();
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Editar Reserva</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="/images/poli-logo.jpg" alt="Politecnico Grancolombiano"/>
+    <div>
+      <h1>Editar Reserva #<span th:text="${reserva.id}"></span></h1>
+      <small>Politecnico Grancolombiano</small>
+    </div>
+  </div>
+  <nav><a href="/dashboard">Inicio</a></nav>
+</header>
+<main>
+  <div class="card">
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+
+    <p style="color:#5c6772;margin-bottom:1.2rem;">
+      Solicitante: <b th:text="${reserva.solicitante.nombre}"></b>
+      &mdash; Estado actual: <b th:text="${reserva.estado}"></b>
+    </p>
+
+    <form th:action="@{|/admin/reservas/${reserva.id}/editar|}" method="post" class="grid-2">
+      <div>
+        <label>Inicio</label>
+        <input type="datetime-local" name="inicio" required
+               th:value="${#temporals.format(reserva.inicio,'yyyy-MM-dd''T''HH:mm')}"/>
+      </div>
+      <div>
+        <label>Fin</label>
+        <input type="datetime-local" name="fin" required
+               th:value="${#temporals.format(reserva.fin,'yyyy-MM-dd''T''HH:mm')}"/>
+      </div>
+      <div>
+        <label>Seccion</label>
+        <select name="seccion">
+          <option th:each="s : ${secciones}"
+                  th:value="${s}"
+                  th:text="${s}"
+                  th:selected="${s == reserva.seccion}"></option>
+        </select>
+      </div>
+      <div>
+        <label>Tipo de evento</label>
+        <input name="tipoEvento" required th:value="${reserva.tipoEvento}"/>
+      </div>
+      <div style="grid-column:span 2">
+        <label>Especificaciones / extras</label>
+        <textarea name="especificaciones" rows="3" th:text="${reserva.especificaciones}"></textarea>
+      </div>
+      <div style="grid-column:span 2;display:flex;gap:.8rem;">
+        <button class="btn" type="submit">Guardar cambios</button>
+        <a href="/dashboard" class="btn btn-amarillo">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</main>
+</body>
+</html>

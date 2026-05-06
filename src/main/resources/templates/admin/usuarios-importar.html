@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Importar usuarios - Auditorio Poligran</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="/images/poli-logo.jpg" alt="Politecnico Grancolombiano"/>
+    <div>
+      <h1>Importar usuarios desde CSV</h1>
+      <small>Politecnico Grancolombiano</small>
+    </div>
+  </div>
+  <nav><a href="/admin/usuarios">Volver a la lista</a></nav>
+</header>
+<main>
+  <div th:if="${error}" class="error" th:text="${error}"></div>
+
+  <div class="card">
+    <h3>Paso 1 - Descarga la plantilla</h3>
+    <p>El archivo CSV debe tener exactamente estas <b>8 columnas</b>, en este orden:</p>
+    <pre>nombre,documento,correo,telefono,organizacion,password,rol,tipoSolicitante</pre>
+    <p>
+      <a class="btn" href="/admin/usuarios/plantilla.csv">Descargar plantilla CSV</a>
+    </p>
+
+    <h4>Reglas</h4>
+    <ul>
+      <li><b>rol</b>: <code>SOLICITANTE</code>, <code>ADMIN_AUDITORIO</code> o <code>OPERATIVO</code></li>
+      <li><b>tipoSolicitante</b>: <code>DOCENTE</code>, <code>ADMINISTRATIVO</code>, <code>EXTERNO</code> o vacio (solo aplica para SOLICITANTE)</li>
+      <li>Internos (DOCENTE, ADMINISTRATIVO, ADMIN_AUDITORIO, OPERATIVO) deben tener correo <code>@poligran.edu.co</code></li>
+      <li>Externos NO pueden tener correo <code>@poligran.edu.co</code></li>
+      <li>Contrasena minimo 6 caracteres</li>
+      <li>Documento y correo deben ser unicos (si ya existen, esa linea se rechaza pero las demas se procesan)</li>
+      <li>Puedes incluir o no la linea de encabezado</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Paso 2 - Sube tu archivo</h3>
+    <form method="post" enctype="multipart/form-data" action="/admin/usuarios/importar">
+      <label>Archivo CSV</label>
+      <input type="file" name="archivo" accept=".csv,text/csv" required/>
+      <br/><br/>
+      <button class="btn" type="submit">Importar usuarios</button>
+    </form>
+    <p style="color:#666;margin-top:1rem">
+      Las lineas validas se cargaran y las invalidas se reportaran.
+      No se hace rollback: si 80 estan bien y 20 mal, los 80 quedan creados.
+    </p>
+  </div>
+</main>
+</body>
+</html>

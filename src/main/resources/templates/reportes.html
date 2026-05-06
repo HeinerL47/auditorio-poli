@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Reportes - Auditorio Poligran</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.6rem;
+    }
+    .kpi {
+      background: #fff;
+      border: 1px solid #e1e6ec;
+      border-radius: 10px;
+      padding: 1.1rem 1rem;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(15,56,90,.06);
+    }
+    .kpi-valor {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #0F385A;
+      line-height: 1.1;
+    }
+    .kpi-label {
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: #5c6772;
+      margin-top: .35rem;
+    }
+    .kpi.verde .kpi-valor  { color: #2da44e; }
+    .kpi.rojo  .kpi-valor  { color: #cf222e; }
+    .kpi.cian  .kpi-valor  { color: #1FB2DE; }
+    .kpi.amarillo .kpi-valor { color: #b07d00; }
+    .kpi.ingresos .kpi-valor { color: #7c3aed; font-size: 1.4rem; }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      margin-bottom: 1.4rem;
+    }
+    .charts-grid .card { margin: 0; }
+    .chart-title {
+      font-size: .95rem;
+      font-weight: 700;
+      color: #0F385A;
+      margin-bottom: .9rem;
+      border-left: 4px solid #1FB2DE;
+      padding-left: .6rem;
+    }
+    .historial-table { font-size: .85rem; }
+    .historial-table th { white-space: nowrap; }
+    .export-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .export-bar h3 { margin: 0; }
+    @media (max-width: 700px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="/images/poli-logo.jpg" alt="Politecnico Grancolombiano"/>
+    <div>
+      <h1>Reportes del Auditorio</h1>
+      <small>Politecnico Grancolombiano</small>
+    </div>
+  </div>
+  <nav>
+    <a href="/dashboard">Inicio</a>
+    <a href="/reportes/historial.csv" class="btn btn-verde" style="text-decoration:none;padding:.4rem .9rem;">
+      Descargar CSV
+    </a>
+  </nav>
+</header>
+<main>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-valor" th:text="${resumen['TOTAL'] ?: 0}"></div>
+      <div class="kpi-label">Total solicitudes</div>
+    </div>
+    <div class="kpi verde">
+      <div class="kpi-valor" th:text="${resumen['APROBADA'] ?: 0}"></div>
+      <div class="kpi-label">Aprobadas</div>
+    </div>
+    <div class="kpi amarillo">
+      <div class="kpi-valor" th:text="${resumen['PENDIENTE'] ?: 0}"></div>
+      <div class="kpi-label">Pendientes</div>
+    </div>
+    <div class="kpi rojo">
+      <div class="kpi-valor" th:text="${resumen['RECHAZADA'] ?: 0}"></div>
+      <div class="kpi-label">Rechazadas</div>
+    </div>
+    <div class="kpi rojo">
+      <div class="kpi-valor" th:text="${resumen['CANCELADA'] ?: 0}"></div>
+      <div class="kpi-label">Canceladas</div>
+    </div>
+    <div class="kpi ingresos">
+      <div class="kpi-valor">$&nbsp;<span th:text="${#numbers.formatDecimal(ingresos, 0, 'COMMA', 0, 'POINT')}"></span></div>
+      <div class="kpi-label">Ingresos externos (COP)</div>
+    </div>
+  </div>
+
+  <!-- Charts row 1 -->
+  <div class="charts-grid">
+    <div class="card">
+      <div class="chart-title">Solicitudes por hora del dia</div>
+      <canvas id="cHora" height="200"></canvas>
+    </div>
+    <div class="card">
+      <div class="chart-title">Solicitudes por dia de la semana</div>
+      <canvas id="cDia" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- Charts row 2 -->
+  <div class="charts-grid">
+    <div class="card">
+      <div class="chart-title">Solicitudes por mes</div>
+      <canvas id="cMes" height="200"></canvas>
+    </div>
+    <div class="card">
+      <div class="chart-title">Uso por seccion del auditorio</div>
+      <canvas id="cSeccion" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- Charts row 3 -->
+  <div class="charts-grid">
+    <div class="card">
+      <div class="chart-title">Tipo de solicitante</div>
+      <canvas id="cTipo" height="200"></canvas>
+    </div>
+    <div class="card">
+      <div class="chart-title">Agentes internos vs externos</div>
+      <canvas id="cIE" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- Historial -->
+  <div class="card">
+    <div class="export-bar">
+      <h3>Historial completo de reservas</h3>
+      <a href="/reportes/historial.csv" class="btn btn-verde" style="text-decoration:none;">
+        Descargar CSV
+      </a>
+    </div>
+    <table class="historial-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Solicitante</th>
+          <th>Tipo</th>
+          <th>Fecha</th>
+          <th>Horario</th>
+          <th>Duracion</th>
+          <th>Seccion</th>
+          <th>Tipo evento</th>
+          <th>Estado</th>
+          <th>Costo (COP)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="r : ${historial}">
+          <td th:text="${r.id}"></td>
+          <td>
+            <span th:text="${r.solicitante.nombre}"></span><br/>
+            <small style="color:#5c6772" th:text="${r.solicitante.correo}"></small>
+          </td>
+          <td>
+            <span th:text="${r.solicitante.tipoSolicitante != null ? r.solicitante.tipoSolicitante : r.solicitante.rol}"></span>
+          </td>
+          <td th:text="${#temporals.format(r.inicio,'dd/MM/yyyy')}"></td>
+          <td>
+            <span th:text="${#temporals.format(r.inicio,'HH:mm')}"></span>
+            &ndash;
+            <span th:text="${#temporals.format(r.fin,'HH:mm')}"></span>
+          </td>
+          <td>
+            <span th:text="${T(java.time.temporal.ChronoUnit).MINUTES.between(r.inicio, r.fin) / 60}"></span>h
+            <span th:text="${T(java.time.temporal.ChronoUnit).MINUTES.between(r.inicio, r.fin) % 60}"></span>m
+          </td>
+          <td><span class="badge" th:text="${r.seccion}"></span></td>
+          <td th:text="${r.tipoEvento}"></td>
+          <td><span class="badge" th:classappend="${'b-' + r.estado}" th:text="${r.estado}"></span></td>
+          <td>
+            <span th:if="${r.costo != null and r.costo.compareTo(T(java.math.BigDecimal).ZERO) > 0}"
+                  th:text="${'$ ' + #numbers.formatDecimal(r.costo, 0, 'COMMA', 0, 'POINT')}"></span>
+            <span th:unless="${r.costo != null and r.costo.compareTo(T(java.math.BigDecimal).ZERO) > 0}"
+                  style="color:#aaa;">—</span>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(historial)}">
+          <td colspan="10" style="text-align:center;color:#5c6772;">Sin registros aun</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<script th:inline="javascript">
+const horario        = /*[[${horario}]]*/ {};
+const dia            = /*[[${dia}]]*/ {};
+const mes            = /*[[${mes}]]*/ {};
+const seccion        = /*[[${seccion}]]*/ {};
+const tipoSolicitante = /*[[${tipoSolicitante}]]*/ {};
+const intExt         = /*[[${intExt}]]*/ {};
+
+const AZUL      = '#0F385A';
+const CIAN      = '#1FB2DE';
+const AMARILLO  = '#FBAF17';
+const VERDE     = '#A6CE38';
+const ROSA      = '#EC0677';
+const MORADO    = '#7c3aed';
+const PALETTE   = [AZUL, CIAN, AMARILLO, VERDE, ROSA, MORADO, '#bf8700', '#cf222e'];
+
+const defaultOpts = {
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+    y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } },
+         grid: { color: '#f0f2f5' } }
+  }
+};
+
+function bar(id, data, color) {
+  const labels = Object.keys(data).map(k => {
+    const diasES = { MONDAY:'Lunes', TUESDAY:'Martes', WEDNESDAY:'Miercoles',
+                     THURSDAY:'Jueves', FRIDAY:'Viernes', SATURDAY:'Sabado', SUNDAY:'Domingo' };
+    return diasES[k] || (isNaN(k) ? k : k + ':00');
+  });
+  new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Reservas',
+        data: Object.values(data),
+        backgroundColor: color + 'cc',
+        borderColor: color,
+        borderWidth: 2,
+        borderRadius: 5
+      }]
+    },
+    options: defaultOpts
+  });
+}
+
+function doughnut(id, data) {
+  new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(data),
+      datasets: [{
+        data: Object.values(data),
+        backgroundColor: PALETTE,
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          display: true,
+          position: 'right',
+          labels: { font: { size: 11 }, boxWidth: 14, padding: 10 }
+        }
+      },
+      cutout: '60%'
+    }
+  });
+}
+
+bar('cHora',    horario,        AZUL);
+bar('cDia',     dia,            CIAN);
+bar('cMes',     mes,            VERDE);
+bar('cSeccion', seccion,        AMARILLO);
+doughnut('cTipo', tipoSolicitante);
+doughnut('cIE',   intExt);
+</script>
+</body>
+</html>

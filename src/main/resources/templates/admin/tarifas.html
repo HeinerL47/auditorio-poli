@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Tarifas</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="/images/poli-logo.jpg" alt="Politecnico Grancolombiano"/>
+    <div>
+      <h1>Tarifas (personas externas)</h1>
+      <small>Politecnico Grancolombiano</small>
+    </div>
+  </div>
+  <nav><a href="/dashboard">Inicio</a></nav>
+</header>
+<main>
+  <div class="card">
+    <table>
+      <thead><tr><th>Seccion</th><th>Valor por hora (COP)</th><th>Acciones</th></tr></thead>
+      <tbody>
+        <tr th:each="t : ${tarifas}">
+          <form th:action="@{|/admin/tarifas/${t.id}|}" method="post">
+            <td th:text="${t.seccion}"></td>
+            <td><input type="number" name="valorHora" th:value="${t.valorHora}" required/></td>
+            <td><button class="btn">Actualizar</button></td>
+          </form>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

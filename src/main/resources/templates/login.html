@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Iniciar sesion - Auditorio Poli</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="/images/poli-logo.jpg" alt="Politecnico Grancolombiano"/>
+    <div>
+      <h1>Auditorio Institucional</h1>
+      <small>Politecnico Grancolombiano</small>
+    </div>
+  </div>
+</header>
+<div class="login-wrapper">
+  <div class="card login-box">
+    <img src="/images/poli-logo.jpg" alt="Poli" class="login-logo"/>
+    <h2>Iniciar sesion</h2>
+    <div th:if="${param.error}" class="error">Credenciales invalidas</div>
+    <div th:if="${param.logout}" class="ok">Sesion cerrada</div>
+    <div th:if="${param.registered}" class="ok">Registro exitoso, ya puedes iniciar sesion</div>
+    <form method="post" action="/login">
+      <label>Correo</label>
+      <input type="email" name="correo" required autofocus/>
+      <label>Contrasena</label>
+      <input type="password" name="password" required/>
+      <button class="btn" type="submit" style="width:100%">Entrar</button>
+    </form>
+    <p style="text-align:center;margin-top:1rem">Eres externo? <a th:href="@{/registro}" style="color:var(--poli-cian);font-weight:600">Crea tu cuenta</a></p>
+    <hr/>
+    <small>
+      <b style="color:var(--poli-azul)">Cuentas demo:</b><br/>
+      admin@poligran.edu.co / admin123 (Admin Auditorio)<br/>
+      docente@poligran.edu.co / docente123 (Docente)<br/>
+      admin.staff@poligran.edu.co / staff123 (Administrativo)<br/>
+      externo@empresa.com / externo123 (Externo)<br/>
+      operativo@poligran.edu.co / ops123 (Operativo)
+    </small>
+  </div>
+</div>
+<footer class="poli-footer">
+  &copy; Politecnico Grancolombiano - <span>Somos diferentes, somos Poli.</span>
+</footer>
+</body>
+</html>

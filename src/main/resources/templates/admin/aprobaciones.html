@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Aprobaciones</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="/images/poli-logo.jpg" alt="Politecnico Grancolombiano"/>
+    <div>
+      <h1>Aprobaciones pendientes</h1>
+      <small>Politecnico Grancolombiano</small>
+    </div>
+  </div>
+  <nav><a href="/dashboard">Inicio</a></nav>
+</header>
+<main>
+  <div class="card">
+    <table>
+      <thead><tr><th>#</th><th>Solicitante</th><th>Inicio</th><th>Fin</th>
+        <th>Seccion</th><th>Tipo</th><th>Costo</th><th>Acciones</th></tr></thead>
+      <tbody>
+        <tr th:each="r : ${pendientes}">
+          <td th:text="${r.id}"></td>
+          <td th:text="${r.solicitante.nombre + ' (' + r.solicitante.rol + ')'}"></td>
+          <td th:text="${#temporals.format(r.inicio,'yyyy-MM-dd HH:mm')}"></td>
+          <td th:text="${#temporals.format(r.fin,'yyyy-MM-dd HH:mm')}"></td>
+          <td th:text="${r.seccion}"></td>
+          <td th:text="${r.tipoEvento}"></td>
+          <td th:text="${r.costo}"></td>
+          <td>
+            <form th:action="@{|/admin/aprobar/${r.id}|}" method="post" style="display:inline">
+              <button class="btn btn-verde">Aprobar</button>
+            </form>
+            <form th:action="@{|/admin/rechazar/${r.id}|}" method="post" style="display:inline">
+              <input name="motivo" placeholder="Motivo" style="width:auto;display:inline-block"/>
+              <button class="btn btn-rojo">Rechazar</button>
+            </form>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(pendientes)}"><td colspan="8">Sin pendientes</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

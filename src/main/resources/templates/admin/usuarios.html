@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Usuarios - Auditorio Poligran</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="/images/poli-logo.jpg" alt="Politecnico Grancolombiano"/>
+    <div>
+      <h1>Gestion de usuarios</h1>
+      <small>Politecnico Grancolombiano</small>
+    </div>
+  </div>
+  <nav>
+    <a href="/dashboard">Inicio</a>
+    <a href="/admin/usuarios/nuevo">+ Nuevo usuario</a>
+  </nav>
+</header>
+<main>
+  <div th:if="${ok}" class="ok" th:text="${ok}"></div>
+  <div th:if="${error}" class="error" th:text="${error}"></div>
+
+  <div class="card">
+    <h3>Todos los usuarios (<span th:text="${#lists.size(usuarios)}"></span>)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Nombre</th><th>Documento</th><th>Correo</th>
+          <th>Telefono</th><th>Organizacion</th>
+          <th>Rol</th><th>Tipo</th><th>Activo</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="u : ${usuarios}">
+          <td th:text="${u.id}"></td>
+          <td th:text="${u.nombre}"></td>
+          <td th:text="${u.documento}"></td>
+          <td th:text="${u.correo}"></td>
+          <td th:text="${u.telefono}"></td>
+          <td th:text="${u.organizacion}"></td>
+          <td><span class="badge" th:text="${u.rol}"></span></td>
+          <td th:text="${u.tipoSolicitante != null ? u.tipoSolicitante : '-'}"></td>
+          <td>
+            <span th:if="${u.activo}" style="color:green;font-weight:bold">SI</span>
+            <span th:unless="${u.activo}" style="color:#c00;font-weight:bold">NO</span>
+          </td>
+          <td>
+            <a class="btn" th:href="@{|/admin/usuarios/${u.id}/editar|}">Editar</a>
+
+            <form th:action="@{|/admin/usuarios/${u.id}/estado|}" method="post" style="display:inline">
+              <input type="hidden" name="activo" th:value="${!u.activo}"/>
+              <button class="btn" th:classappend="${u.activo} ? 'btn-amarillo' : ''"
+                      th:text="${u.activo} ? 'Desactivar' : 'Activar'"></button>
+            </form>
+
+            <form th:action="@{|/admin/usuarios/${u.id}/password|}" method="post" style="display:inline"
+                  onsubmit="var p=prompt('Nueva contrasena (minimo 6 caracteres):'); if(!p||p.length&lt;6){return false;} this.nuevaPassword.value=p;">
+              <input type="hidden" name="nuevaPassword" value=""/>
+              <button class="btn">Resetear clave</button>
+            </form>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(usuarios)}">
+          <td colspan="10" style="text-align:center;color:#5c6772;">Sin usuarios registrados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

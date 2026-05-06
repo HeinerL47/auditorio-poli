@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Registro - Auditorio Poligran</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="/images/poli-logo.jpg" alt="Politecnico Grancolombiano"/>
+    <div>
+      <h1>Registro de persona externa</h1>
+      <small>Politecnico Grancolombiano</small>
+    </div>
+  </div>
+  <nav><a href="/login">Volver al login</a></nav>
+</header>
+<main>
+  <div class="card login-box">
+    <p style="color:#666"><b>Solo para personas externas</b> (empresas, particulares).<br/>
+    Docentes y administrativos ingresan con su correo institucional <b>@poligran.edu.co</b> sin registrarse.</p>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+    <form method="post" action="/registro">
+      <label>Nombre completo</label><input name="nombre" required/>
+      <label>Documento</label><input name="documento" required/>
+      <label>Correo</label><input type="email" name="correo" required/>
+      <label>Telefono</label><input name="telefono"/>
+      <label>Organizacion</label><input name="organizacion"/>
+      <label>Contrasena</label><input type="password" name="password" required/>
+      <button class="btn" type="submit">Registrarme</button>
+    </form>
+    <p><a href="/login">Volver a iniciar sesion</a></p>
+  </div>
+</main>
+</body>
+</html>
