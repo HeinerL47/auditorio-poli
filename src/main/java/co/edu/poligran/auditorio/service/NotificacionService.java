@@ -123,7 +123,12 @@ public class NotificacionService {
         if ("APROBADA".equals(estado)) {
             mensaje = "Tu reserva ha sido <b>aprobada</b>. Recibiras un recordatorio una hora antes del evento.";
         } else if ("RECHAZADA".equals(estado)) {
-            mensaje = "Tu reserva ha sido <b>rechazada</b>. Si lo consideras necesario, comunicate con el equipo de Auditorio.";
+            String motivo = r.getMotivoRechazo();
+            if (motivo != null && !motivo.isBlank()) {
+                mensaje = "Tu reserva ha sido <b>rechazada</b>. Motivo: <b>" + escape(motivo) + "</b>.";
+            } else {
+                mensaje = "Tu reserva ha sido <b>rechazada</b>. Si lo consideras necesario, comunicate con el equipo de Auditorio.";
+            }
         } else {
             mensaje = "El estado de tu reserva fue actualizado a <b>" + estado + "</b>.";
         }
@@ -256,8 +261,13 @@ public class NotificacionService {
           .append(fila("Seccion", seccion))
           .append(fila("Inicio", inicio))
           .append(fila("Fin", fin))
-          .append(fila("Costo", costo))
-          .append("</table>");
+          .append(fila("Costo", costo));
+
+        if ("RECHAZADA".equals(estadoVisual) && r.getMotivoRechazo() != null && !r.getMotivoRechazo().isBlank()) {
+            sb.append(fila("Motivo de rechazo", escape(r.getMotivoRechazo())));
+        }
+
+        sb.append("</table>");
 
         if (!enlace.isBlank()) {
             sb.append("<p style=\"text-align:center;margin:0 0 18px 0;\">")

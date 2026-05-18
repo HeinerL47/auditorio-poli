@@ -11,6 +11,9 @@ import java.util.List;
 
 @Service
 public class UsuarioService {
+
+    public static final int MIN_PASSWORD_LENGTH = 6;
+
     private final UsuarioRepository repo;
     private final PasswordEncoder pe;
 
@@ -27,7 +30,7 @@ public class UsuarioService {
         return repo.save(Usuario.builder()
                 .nombre(nombre).documento(documento).correo(correo)
                 .telefono(telefono).organizacion(organizacion)
-                .password(pe.encode(password))
+                .password(pe.encode(password.trim()))
                 .rol(Rol.SOLICITANTE).tipoSolicitante(TipoSolicitante.EXTERNO)
                 .activo(true).build());
     }
@@ -50,12 +53,11 @@ public class UsuarioService {
         }
         if (repo.existsByCorreo(correo)) throw new IllegalArgumentException("Correo ya registrado");
         if (repo.existsByDocumento(documento)) throw new IllegalArgumentException("Documento ya registrado");
-        if (password == null || password.length() < 6)
-            throw new IllegalArgumentException("La contrasena debe tener al menos 6 caracteres");
+        validarPassword(password);
         return repo.save(Usuario.builder()
                 .nombre(nombre).documento(documento).correo(correo)
                 .telefono(telefono).organizacion(organizacion)
-                .password(pe.encode(password))
+                .password(pe.encode(password.trim()))
                 .rol(rol).tipoSolicitante(tipo)
                 .activo(true).build());
     }
@@ -83,11 +85,17 @@ public class UsuarioService {
     }
 
     public void resetPassword(Long id, String nuevaPassword) {
-        if (nuevaPassword == null || nuevaPassword.length() < 6)
-            throw new IllegalArgumentException("La contrasena debe tener al menos 6 caracteres");
+        validarPassword(nuevaPassword);
         Usuario u = repo.findById(id).orElseThrow();
-        u.setPassword(pe.encode(nuevaPassword));
+        u.setPassword(pe.encode(nuevaPassword.trim()));
         repo.save(u);
+    }
+
+    public void validarPassword(String password) {
+        if (password == null || password.trim().length() < MIN_PASSWORD_LENGTH) {
+            throw new IllegalArgumentException(
+                    "La contrasena debe tener al menos " + MIN_PASSWORD_LENGTH + " caracteres");
+        }
     }
 
     public List<Usuario> listarTodos() {

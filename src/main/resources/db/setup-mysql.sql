@@ -22,8 +22,11 @@ CREATE DATABASE IF NOT EXISTS auditorio_poli
 
 USE auditorio_poli;
 
+-- Columna opcional (Hibernate ddl-auto=update la crea automaticamente):
+-- ALTER TABLE reservas ADD COLUMN motivo_rechazo VARCHAR(2000) NULL;
+
 -- Verificar despues de la primera ejecucion:
 -- SELECT id, nombre, correo, rol, tipo_solicitante FROM usuarios;
--- SELECT * FROM reservas;
+-- SELECT id, estado, motivo_rechazo FROM reservas;
 -- SELECT * FROM bloqueos;
 -- SELECT * FROM tarifas;

@@ -77,13 +77,48 @@
     </div>
   </div>
   <nav>
-    <a href="/dashboard">Inicio</a>
-    <a href="/reportes/historial.csv" class="btn btn-verde" style="text-decoration:none;padding:.4rem .9rem;">
-      Descargar CSV
-    </a>
+    <a href="/dashboard">Volver</a>
   </nav>
 </header>
 <main>
+
+  <div class="card" style="margin-bottom:1.2rem;">
+    <h3 style="margin-top:0;">Filtros del reporte</h3>
+    <form method="get" action="/reportes" class="grid-2" style="align-items:end;">
+      <div>
+        <label>Configuracion</label>
+        <select name="seccion">
+          <option value="">Todas (B1, B2, B3, COMPLETO)</option>
+          <option th:each="s : ${secciones}" th:value="${s}" th:text="${s}"
+                  th:selected="${filtroSeccion != null and filtroSeccion == s}"></option>
+        </select>
+      </div>
+      <div>
+        <label>Periodo</label>
+        <select name="periodo">
+          <option value="semana" th:selected="${filtroPeriodo == 'semana'}">Semana</option>
+          <option value="mes" th:selected="${filtroPeriodo == 'mes'}">Mes</option>
+          <option value="anio" th:selected="${filtroPeriodo == 'anio'}">Anio</option>
+        </select>
+      </div>
+      <div>
+        <label>Fecha de referencia</label>
+        <input type="date" name="fechaRef" th:value="${filtroFechaRef}"/>
+      </div>
+      <div>
+        <button class="btn" type="submit">Aplicar filtros</button>
+        <a class="btn btn-amarillo"
+           th:href="@{/reportes/historial.csv(seccion=${filtroSeccion},periodo=${filtroPeriodo},fechaRef=${filtroFechaRef})}"
+           style="text-decoration:none;margin-left:.4rem;">CSV filtrado</a>
+      </div>
+    </form>
+    <p style="margin:.8rem 0 0;color:#5c6772;font-size:.9rem;">
+      Periodo mostrado:
+      <b th:text="${#temporals.format(rangoDesde,'dd/MM/yyyy')}"></b>
+      al
+      <b th:text="${#temporals.format(rangoHasta,'dd/MM/yyyy')}"></b>
+    </p>
+  </div>
 
   <!-- KPI Cards -->
   <div class="kpi-grid">
@@ -170,6 +205,7 @@
           <th>Tipo evento</th>
           <th>Estado</th>
           <th>Costo (COP)</th>
+          <th>Motivo rechazo</th>
         </tr>
       </thead>
       <tbody>
@@ -201,9 +237,10 @@
             <span th:unless="${r.costo != null and r.costo.compareTo(T(java.math.BigDecimal).ZERO) > 0}"
                   style="color:#aaa;">—</span>
           </td>
+          <td th:text="${r.motivoRechazo != null ? r.motivoRechazo : '—'}"></td>
         </tr>
         <tr th:if="${#lists.isEmpty(historial)}">
-          <td colspan="10" style="text-align:center;color:#5c6772;">Sin registros aun</td>
+          <td colspan="11" style="text-align:center;color:#5c6772;">Sin registros en el periodo</td>
         </tr>
       </tbody>
     </table>

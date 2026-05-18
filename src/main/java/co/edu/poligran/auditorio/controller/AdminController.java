@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
@@ -42,9 +43,48 @@ public class AdminController {
     @PostMapping("/rechazar/{id}")
     public String rechazar(@PathVariable Long id,
                            @RequestParam(required = false) String motivo,
-                           @AuthenticationPrincipal UserDetails ud) {
-        reservas.rechazar(id, ud.getUsername(), motivo);
+                           @AuthenticationPrincipal UserDetails ud,
+                           RedirectAttributes ra) {
+        try {
+            reservas.rechazar(id, ud.getUsername(), motivo);
+            ra.addFlashAttribute("ok", "Reserva rechazada");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/admin/aprobaciones";
+    }
+
+    @GetMapping("/reservas/{id}/editar")
+    public String editarReservaForm(@PathVariable Long id, Model m, RedirectAttributes ra) {
+        Reserva r = reservas.porId(id);
+        if (r.getEstado() != EstadoReserva.PENDIENTE && r.getEstado() != EstadoReserva.APROBADA) {
+            ra.addFlashAttribute("error", "Esta reserva no se puede editar");
+            return "redirect:/dashboard";
+        }
+        m.addAttribute("reserva", r);
+        m.addAttribute("secciones", Seccion.values());
+        return "admin/reserva-editar";
+    }
+
+    @PostMapping("/reservas/{id}/editar")
+    public String editarReserva(@PathVariable Long id,
+                                @RequestParam String inicio,
+                                @RequestParam String fin,
+                                @RequestParam Seccion seccion,
+                                @RequestParam String tipoEvento,
+                                @RequestParam(required = false) String especificaciones,
+                                RedirectAttributes ra) {
+        try {
+            reservas.actualizar(id,
+                    LocalDateTime.parse(inicio),
+                    LocalDateTime.parse(fin),
+                    seccion, tipoEvento, especificaciones);
+            ra.addFlashAttribute("ok", "Reserva actualizada correctamente");
+            return "redirect:/dashboard";
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/admin/reservas/" + id + "/editar";
+        }
     }
 
     @GetMapping("/tarifas")

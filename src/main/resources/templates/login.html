@@ -2,6 +2,9 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <meta http-equiv="Expires" content="0"/>
   <title>Iniciar sesion - Auditorio Poli</title>
   <link rel="stylesheet" href="/css/styles.css"/>
 </head>
@@ -19,49 +22,37 @@
 <div class="login-wrapper">
   <div class="card login-box">
     <img src="/images/poli-logo.jpg" alt="Poli" class="login-logo"/>
-
     <h2>Iniciar sesion</h2>
 
-    <div th:if="${param.error}" class="error">
-      Credenciales invalidas
+    <div th:if="${param.error}" class="error">Credenciales invalidas</div>
+    <div th:if="${param.logout}" class="ok">Sesion cerrada correctamente</div>
+    <div th:if="${param.expired}" class="error">
+      Tu sesion expiro o se inicio en otro dispositivo. Ingresa de nuevo.
     </div>
+    <div th:if="${param.registered}" class="ok">Registro exitoso, ya puedes iniciar sesion</div>
 
-    <div th:if="${param.logout}" class="ok">
-      Sesion cerrada
-    </div>
-
-    <div th:if="${param.registered}" class="ok">
-      Registro exitoso, ya puedes iniciar sesion
-    </div>
-
-    <form method="post" action="/login">
-
+    <form method="post" action="/login" autocomplete="off">
       <label for="correo">Correo</label>
       <input type="email" id="correo" name="correo" required autofocus/>
-
       <label for="password">Contrasena</label>
       <input type="password" id="password" name="password" required/>
-
-      <button class="btn" type="submit" style="width:100%">
-        Entrar
-      </button>
-
+      <button class="btn" type="submit" style="width:100%">Entrar</button>
     </form>
 
     <p style="text-align:center;margin-top:1rem">
       Eres externo?
-      <a th:href="@{/registro}" style="color:var(--poli-cian);font-weight:600">
-        Crea tu cuenta
-      </a>
+      <a th:href="@{/registro}" style="color:var(--poli-cian);font-weight:600">Crea tu cuenta</a>
     </p>
-
   </div>
 </div>
 
 <footer class="poli-footer">
-  &copy; Politecnico Grancolombiano -
-  <span>Somos diferentes, Somos Poli.</span>
+  &copy; Politecnico Grancolombiano - <span>Somos diferentes, Somos Poli.</span>
 </footer>
-
+<script>
+if (window.history && window.history.replaceState) {
+  window.history.replaceState(null, '', window.location.pathname + window.location.search);
+}
+</script>
 </body>
 </html>

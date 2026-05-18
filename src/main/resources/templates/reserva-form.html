@@ -19,14 +19,14 @@
 <main>
   <div class="card">
     <div th:if="${error}" class="error" th:text="${error}"></div>
-    <form method="post" action="/reservas/nueva">
+    <form method="post" action="/reservas/nueva" id="formReserva" onsubmit="return validarFormulario()">
       <div class="grid-2">
         <div>
           <label>Inicio</label>
           <input type="datetime-local" name="inicio" id="inicio" th:value="${inicio}" required/>
         </div>
         <div>
-          <label>Fin (max 4h)</label>
+          <label>Fin (min 1h, max 4h)</label>
           <input type="datetime-local" name="fin" id="fin" th:value="${fin}" required/>
         </div>
       </div>
@@ -36,7 +36,7 @@
       </select>
       <label>Tipo de evento</label>
       <input name="tipoEvento" th:value="${tipoEvento}" required/>
-      <label>Especificaciones / extras (sillas, mesas, microfonos, video, etc.)</label>
+      <label>Especificaciones / extras</label>
       <textarea name="especificaciones" rows="4" th:text="${especificaciones}"></textarea>
       <div class="card" style="background:#fffbe6">
         <b>Cotizacion (solo externos):</b>
@@ -45,10 +45,31 @@
       </div>
       <button class="btn" type="submit">Crear reserva</button>
     </form>
-    <p><b>Reglas:</b> 8:00-21:00, max 4h, minimo 1 semana de anticipacion, maximo 1 mes.</p>
+    <p><b>Reglas:</b> 8:00-21:00, duracion minima 1 hora, maxima 4 horas, minimo 1 semana de anticipacion, maximo 1 mes.</p>
   </div>
 </main>
 <script>
+const MIN_MINUTOS = 60;
+const MAX_MINUTOS = 240;
+
+function validarFormulario() {
+  const inicio = document.getElementById('inicio').value;
+  const fin = document.getElementById('fin').value;
+  if (!inicio || !fin) return true;
+  const d1 = new Date(inicio);
+  const d2 = new Date(fin);
+  const mins = (d2 - d1) / 60000;
+  if (mins < MIN_MINUTOS) {
+    alert('La duracion minima es de 1 hora.');
+    return false;
+  }
+  if (mins > MAX_MINUTOS) {
+    alert('La duracion maxima es de 4 horas.');
+    return false;
+  }
+  return true;
+}
+
 async function cotizar() {
   const fd = new FormData();
   fd.append('seccion', document.getElementById('seccion').value);
@@ -56,6 +77,7 @@ async function cotizar() {
   fd.append('fin', document.getElementById('fin').value);
   const r = await fetch('/reservas/cotizar', { method: 'POST', body: fd });
   if (r.ok) { const d = await r.json(); document.getElementById('cotizacion').textContent = '$ ' + d.costo; }
+  else { document.getElementById('cotizacion').textContent = 'Revise fechas y duracion'; }
 }
 </script>
 </body>

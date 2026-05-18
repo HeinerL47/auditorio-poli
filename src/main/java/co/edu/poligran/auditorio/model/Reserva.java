@@ -41,6 +41,9 @@ public class Reserva {
     @Column(length = 2000)
     private String observaciones;
 
+    @Column(length = 2000)
+    private String motivoRechazo;
+
     private LocalDateTime creadaEn;
     private LocalDateTime decididaEn;
     private String decididaPor;
@@ -68,6 +71,8 @@ public class Reserva {
     public void setCosto(BigDecimal costo) { this.costo = costo; }
     public String getObservaciones() { return observaciones; }
     public void setObservaciones(String o) { this.observaciones = o; }
+    public String getMotivoRechazo() { return motivoRechazo; }
+    public void setMotivoRechazo(String motivoRechazo) { this.motivoRechazo = motivoRechazo; }
     public LocalDateTime getCreadaEn() { return creadaEn; }
     public void setCreadaEn(LocalDateTime c) { this.creadaEn = c; }
     public LocalDateTime getDecididaEn() { return decididaEn; }

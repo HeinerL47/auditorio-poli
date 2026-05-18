@@ -14,7 +14,7 @@
       <small>Politecnico Grancolombiano</small>
     </div>
   </div>
-  <nav><a href="/dashboard">Inicio</a></nav>
+  <nav><a href="/dashboard">Volver</a></nav>
 </header>
 <main>
   <div class="card">
@@ -25,40 +25,58 @@
       &mdash; Estado actual: <b th:text="${reserva.estado}"></b>
     </p>
 
-    <form th:action="@{|/admin/reservas/${reserva.id}/editar|}" method="post" class="grid-2">
-      <div>
-        <label>Inicio</label>
-        <input type="datetime-local" name="inicio" required
-               th:value="${#temporals.format(reserva.inicio,'yyyy-MM-dd''T''HH:mm')}"/>
-      </div>
-      <div>
-        <label>Fin</label>
-        <input type="datetime-local" name="fin" required
-               th:value="${#temporals.format(reserva.fin,'yyyy-MM-dd''T''HH:mm')}"/>
-      </div>
-      <div>
-        <label>Seccion</label>
-        <select name="seccion">
-          <option th:each="s : ${secciones}"
-                  th:value="${s}"
-                  th:text="${s}"
-                  th:selected="${s == reserva.seccion}"></option>
-        </select>
-      </div>
-      <div>
-        <label>Tipo de evento</label>
-        <input name="tipoEvento" required th:value="${reserva.tipoEvento}"/>
-      </div>
-      <div style="grid-column:span 2">
-        <label>Especificaciones / extras</label>
-        <textarea name="especificaciones" rows="3" th:text="${reserva.especificaciones}"></textarea>
-      </div>
-      <div style="grid-column:span 2;display:flex;gap:.8rem;">
-        <button class="btn" type="submit">Guardar cambios</button>
-        <a href="/dashboard" class="btn btn-amarillo">Cancelar</a>
+    <form th:action="@{|/admin/reservas/${reserva.id}/editar|}" method="post"
+          onsubmit="return validarEdicion()">
+      <div class="grid-2">
+        <div>
+          <label>Inicio</label>
+          <input type="datetime-local" name="inicio" id="inicio" required
+                 th:value="${#temporals.format(reserva.inicio,'yyyy-MM-dd''T''HH:mm')}"/>
+        </div>
+        <div>
+          <label>Fin (min 1h, max 4h)</label>
+          <input type="datetime-local" name="fin" id="fin" required
+                 th:value="${#temporals.format(reserva.fin,'yyyy-MM-dd''T''HH:mm')}"/>
+        </div>
+        <div>
+          <label>Seccion</label>
+          <select name="seccion">
+            <option th:each="s : ${secciones}"
+                    th:value="${s}"
+                    th:text="${s}"
+                    th:selected="${s == reserva.seccion}"></option>
+          </select>
+        </div>
+        <div>
+          <label>Tipo de evento</label>
+          <input name="tipoEvento" required th:value="${reserva.tipoEvento}"/>
+        </div>
+        <div style="grid-column:span 2">
+          <label>Especificaciones / extras</label>
+          <textarea name="especificaciones" rows="3" th:text="${reserva.especificaciones}"></textarea>
+        </div>
+        <div style="grid-column:span 2;display:flex;gap:.8rem;">
+          <button class="btn" type="submit">Guardar cambios</button>
+          <a href="/dashboard" class="btn btn-amarillo">Cancelar</a>
+        </div>
       </div>
     </form>
+    <p style="margin-top:1rem;color:#5c6772;font-size:.9rem;">
+      Se validan conflictos con otras reservas (B1/B2/B3), bloqueos administrativos y reglas de horario.
+    </p>
   </div>
 </main>
+<script>
+const MIN_MINUTOS = 60;
+const MAX_MINUTOS = 240;
+function validarEdicion() {
+  const d1 = new Date(document.getElementById('inicio').value);
+  const d2 = new Date(document.getElementById('fin').value);
+  const mins = (d2 - d1) / 60000;
+  if (mins < MIN_MINUTOS) { alert('La duracion minima es de 1 hora.'); return false; }
+  if (mins > MAX_MINUTOS) { alert('La duracion maxima es de 4 horas.'); return false; }
+  return true;
+}
+</script>
 </body>
 </html>

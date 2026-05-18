@@ -15,7 +15,6 @@
     </div>
   </div>
   <nav>
-    <a href="/dashboard">Inicio</a>
     <a href="/calendario">Calendario</a>
     <a sec:authorize="hasRole('SOLICITANTE')" href="/reservas/nueva">Nueva reserva</a>
     <a sec:authorize="hasRole('ADMIN_AUDITORIO')" href="/admin/aprobaciones">Aprobaciones</a>
@@ -40,7 +39,8 @@
 
   <div class="card">
     <h3>Reservas</h3>
-    <div th:if="${param.ok}" class="ok">Reserva creada correctamente</div>
+    <div th:if="${param.ok}" class="ok">Operacion realizada correctamente</div>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
     <table>
       <thead>
         <tr>
@@ -52,6 +52,7 @@
           <th>Tipo</th>
           <th>Estado</th>
           <th>Costo</th>
+          <th>Motivo rechazo</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -66,6 +67,14 @@
           <td><span class="badge" th:classappend="${'b-' + r.estado}" th:text="${r.estado}"></span></td>
           <td th:text="${r.costo}"></td>
           <td>
+            <span th:if="${r.estado.name() == 'RECHAZADA' and r.motivoRechazo != null}"
+                  th:text="${r.motivoRechazo}" style="color:#cf222e;font-size:.85rem;"></span>
+            <span th:unless="${r.estado.name() == 'RECHAZADA' and r.motivoRechazo != null}">—</span>
+          </td>
+          <td>
+            <a sec:authorize="hasRole('ADMIN_AUDITORIO')"
+               th:if="${r.estado.name() == 'PENDIENTE' or r.estado.name() == 'APROBADA'}"
+               class="btn" th:href="@{|/admin/reservas/${r.id}/editar|}">Editar</a>
             <form sec:authorize="hasAnyRole('SOLICITANTE','ADMIN_AUDITORIO')"
                   th:if="${r.estado.name() == 'PENDIENTE' or r.estado.name() == 'APROBADA'}"
                   th:action="@{|/reservas/${r.id}/cancelar|}" method="post" style="display:inline">

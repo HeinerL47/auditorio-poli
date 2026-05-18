@@ -20,10 +20,33 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     List<Reserva> findSolapadas(@Param("inicio") LocalDateTime inicio,
                                 @Param("fin") LocalDateTime fin);
 
-    @Query("SELECT r FROM Reserva r WHERE r.estado = 'APROBADA' " +
-            "AND r.inicio BETWEEN :desde AND :hasta")
-    List<Reserva> findAprobadasEnRango(@Param("desde") LocalDateTime desde,
-                                       @Param("hasta") LocalDateTime hasta);
+    @Query("SELECT r FROM Reserva r WHERE r.estado IN ('PENDIENTE','APROBADA') " +
+            "AND r.inicio < :fin AND r.fin > :inicio AND r.id <> :excludeId")
+    List<Reserva> findSolapadasExcluyendo(@Param("inicio") LocalDateTime inicio,
+                                          @Param("fin") LocalDateTime fin,
+                                          @Param("excludeId") Long excludeId);
+
+    @Query("SELECT r FROM Reserva r WHERE r.estado IN ('APROBADA','PENDIENTE') " +
+            "AND r.inicio < :hasta AND r.fin > :desde")
+    List<Reserva> findActivasEnRango(@Param("desde") LocalDateTime desde,
+                                     @Param("hasta") LocalDateTime hasta);
+
+    @Query("SELECT r FROM Reserva r WHERE r.estado IN ('APROBADA','PENDIENTE') " +
+            "AND r.inicio < :hasta AND r.fin > :desde " +
+            "AND (:seccion IS NULL OR r.seccion = :seccion)")
+    List<Reserva> findActivasEnRangoPorSeccion(@Param("desde") LocalDateTime desde,
+                                               @Param("hasta") LocalDateTime hasta,
+                                               @Param("seccion") Seccion seccion);
 
     List<Reserva> findByEstadoAndInicioBetween(EstadoReserva estado, LocalDateTime desde, LocalDateTime hasta);
+
+    @Query("SELECT r FROM Reserva r WHERE r.inicio >= :desde AND r.inicio < :hasta")
+    List<Reserva> findConInicioEnRango(@Param("desde") LocalDateTime desde,
+                                       @Param("hasta") LocalDateTime hasta);
+
+    @Query("SELECT r FROM Reserva r WHERE r.inicio >= :desde AND r.inicio < :hasta " +
+            "AND (:seccion IS NULL OR r.seccion = :seccion)")
+    List<Reserva> findConInicioEnRangoPorSeccion(@Param("desde") LocalDateTime desde,
+                                                  @Param("hasta") LocalDateTime hasta,
+                                                  @Param("seccion") Seccion seccion);
 }

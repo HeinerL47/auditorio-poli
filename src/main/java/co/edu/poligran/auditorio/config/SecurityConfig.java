@@ -4,14 +4,17 @@ import co.edu.poligran.auditorio.repository.UsuarioRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.HeaderWriterLogoutHandler;
+import org.springframework.security.web.header.writers.CacheControlHeadersWriter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
@@ -20,6 +23,11 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
 
     @Bean
@@ -51,14 +59,21 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           SessionRegistry sessionRegistry,
+                                           NoCacheFilter noCacheFilter) throws Exception {
+
+        HeaderWriterLogoutHandler cacheLogout = new HeaderWriterLogoutHandler(
+                new CacheControlHeadersWriter());
 
         http
+                .addFilterAfter(noCacheFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+
                 .csrf(csrf -> csrf.disable())
 
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.disable())
-                        .cacheControl(Customizer.withDefaults())
+                        .cacheControl(cache -> cache.disable())
                 )
 
                 .authorizeHttpRequests(auth -> auth
@@ -114,13 +129,15 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/login?logout")
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
+                        .deleteCookies("JSESSIONID", "SESSION", "remember-me")
+                        .addLogoutHandler(cacheLogout)
                         .permitAll()
                 )
 
                 .sessionManagement(session -> session
                         .invalidSessionUrl("/login?expired")
                         .maximumSessions(1)
+                        .sessionRegistry(sessionRegistry)
                         .maxSessionsPreventsLogin(false)
                         .expiredUrl("/login?expired")
                 );

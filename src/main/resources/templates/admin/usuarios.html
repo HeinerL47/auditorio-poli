@@ -15,7 +15,7 @@
     </div>
   </div>
   <nav>
-    <a href="/dashboard">Inicio</a>
+    <a href="/dashboard">Volver</a>
     <a href="/admin/usuarios/nuevo">+ Nuevo usuario</a>
   </nav>
 </header>
@@ -49,18 +49,20 @@
           </td>
           <td>
             <a class="btn" th:href="@{|/admin/usuarios/${u.id}/editar|}">Editar</a>
-
             <form th:action="@{|/admin/usuarios/${u.id}/estado|}" method="post" style="display:inline">
               <input type="hidden" name="activo" th:value="${!u.activo}"/>
               <button class="btn" th:classappend="${u.activo} ? 'btn-amarillo' : ''"
                       th:text="${u.activo} ? 'Desactivar' : 'Activar'"></button>
             </form>
-
-            <form th:action="@{|/admin/usuarios/${u.id}/password|}" method="post" style="display:inline"
-                  onsubmit="var p=prompt('Nueva contrasena (minimo 6 caracteres):'); if(!p||p.length&lt;6){return false;} this.nuevaPassword.value=p;">
-              <input type="hidden" name="nuevaPassword" value=""/>
-              <button class="btn">Resetear clave</button>
-            </form>
+            <details style="display:inline-block;margin-left:.3rem;">
+              <summary class="btn" style="cursor:pointer;list-style:none;">Resetear clave</summary>
+              <form th:action="@{|/admin/usuarios/${u.id}/password|}" method="post"
+                    style="margin-top:.5rem;padding:.6rem;background:#f4f6f9;border-radius:6px;">
+                <input type="password" name="nuevaPassword" minlength="6" required
+                       placeholder="Minimo 6 caracteres" style="width:180px;display:inline-block;"/>
+                <button class="btn btn-verde" type="submit">Guardar</button>
+              </form>
+            </details>
           </td>
         </tr>
         <tr th:if="${#lists.isEmpty(usuarios)}">
