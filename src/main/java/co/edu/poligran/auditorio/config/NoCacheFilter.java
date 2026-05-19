@@ -40,13 +40,14 @@ public class NoCacheFilter extends OncePerRequestFilter {
         }
     }
 
-    private boolean esPaginaProtegida(String path) {
+    private boolean esRecursoEstatico(String path) {
         if (path == null) return false;
-        if (path.startsWith("/css/") || path.startsWith("/js/")
-                || path.startsWith("/images/") || path.equals("/favicon.ico")) {
-            return false;
-        }
-        return !path.equals("/login") && !path.equals("/registro")
-                && !path.startsWith("/error");
+        return path.startsWith("/css/") || path.startsWith("/js/")
+                || path.startsWith("/images/") || path.equals("/favicon.ico");
+    }
+
+    /** HTML y APIs de pagina: sin cache (evita login/dashboard viejos en Atras/Adelante). */
+    private boolean esPaginaProtegida(String path) {
+        return !esRecursoEstatico(path);
     }
 }

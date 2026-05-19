@@ -2,16 +2,17 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
   <meta http-equiv="Pragma" content="no-cache"/>
   <meta http-equiv="Expires" content="0"/>
   <title>Iniciar sesión - Auditorio Poli</title>
-  <link rel="stylesheet" href="/css/styles.css"/>
+  <link rel="stylesheet" th:href="@{/css/styles.css(v=2)}"/>
 </head>
 <body>
 <header>
   <div class="brand">
-    <img src="/images/poli-logo.jpg" alt="Politécnico Grancolombiano"/>
+    <img th:src="@{/images/poli-logo.jpg(v=2)}" src="/images/poli-logo.jpg" alt="Politécnico Grancolombiano"/>
     <div>
       <h1>Auditorio Institucional</h1>
       <small>Politécnico Grancolombiano</small>
@@ -21,7 +22,7 @@
 
 <div class="login-wrapper">
   <div class="card login-box">
-    <img src="/images/poli-logo.jpg" alt="Poli" class="login-logo"/>
+    <img th:src="@{/images/poli-logo.jpg(v=2)}" src="/images/poli-logo.jpg" alt="Poli" class="login-logo"/>
     <h2>Iniciar sesión</h2>
 
     <div th:if="${param.error}" class="error">Credenciales inválidas</div>
@@ -58,6 +59,6 @@
   &copy; Politécnico Grancolombiano -
   <span>Somos diferentes, somos Poli.</span>
 </footer>
-<script src="/js/login-session.js?v=1"></script>
+<script th:src="@{/js/login-session.js(v=2)}"></script>
 </body>
 </html>

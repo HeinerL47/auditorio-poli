@@ -25,9 +25,11 @@
     marcarSalida();
   }
 
-  window.addEventListener('pageshow', function () {
+  window.addEventListener('pageshow', function (event) {
+    if (!event.persisted) return;
     marcarSalida();
-    fetch('/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store' }).catch(function () {});
+    fetch('/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store' })
+      .finally(function () { location.reload(); });
   });
 
   var form = document.getElementById('formLogin');
@@ -36,8 +38,6 @@
       limpiarSalida();
     });
   }
-
-  window.addEventListener('unload', function () {});
 
   if (window.history && window.history.replaceState) {
     window.history.replaceState(null, '', location.pathname + location.search);
