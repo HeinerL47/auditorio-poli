@@ -29,7 +29,7 @@
         <label>Sección (opcional)</label>
         <select name="seccion">
           <option value="">Todas</option>
-          <option th:each="s : ${secciones}" th:value="${s}" th:text="${s}"></option>
+          <option th:each="s : ${secciones}" th:value="${s}" th:text="${s.label}"></option>
         </select>
       </div>
       <div>
@@ -55,7 +55,7 @@
         <label>Sección (opcional)</label>
         <select name="seccion">
           <option value="">Todas</option>
-          <option th:each="s : ${secciones}" th:value="${s}" th:text="${s}"></option>
+          <option th:each="s : ${secciones}" th:value="${s}" th:text="${s.label}"></option>
         </select>
       </div>
       <div><label>Inicio</label><input type="datetime-local" name="inicio" required/></div>
@@ -93,7 +93,7 @@
             </span>
           </td>
           <td th:text="${b.motivo}"></td>
-          <td th:text="${b.seccion != null ? b.seccion : 'Todas'}"></td>
+          <td th:text="${b.seccion != null ? b.seccion.label : 'Todas'}"></td>
           <td>
             <span th:if="${b.recurrente}" th:text="${b.diaSemana}"></span>
             <span th:unless="${b.recurrente}"

@@ -71,7 +71,7 @@
           <td th:text="${r.solicitante.nombre}"></td>
           <td th:text="${#temporals.format(r.inicio,'yyyy-MM-dd HH:mm')}"></td>
           <td th:text="${#temporals.format(r.fin,'yyyy-MM-dd HH:mm')}"></td>
-          <td th:text="${r.seccion}"></td>
+          <td th:text="${r.seccion.label}"></td>
           <td th:text="${r.tipoEvento}"></td>
           <td><span class="badge" th:classappend="${'b-' + r.estado}" th:text="${r.estado}"></span></td>
           <td th:text="${r.costo != null ? r.costo : '—'}"></td>

@@ -39,7 +39,7 @@
           <td th:text="${r.solicitante.nombre + ' (' + r.solicitante.rol + ')'}"></td>
           <td th:text="${#temporals.format(r.inicio,'yyyy-MM-dd HH:mm')}"></td>
           <td th:text="${#temporals.format(r.fin,'yyyy-MM-dd HH:mm')}"></td>
-          <td th:text="${r.seccion}"></td>
+          <td th:text="${r.seccion.label}"></td>
           <td th:text="${r.tipoEvento}"></td>
           <td th:text="${r.costo}"></td>
           <td>

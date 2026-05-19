@@ -46,6 +46,7 @@
         <li>Duración mínima: <b>1 hora</b> &nbsp;|&nbsp; Duración máxima: <b>4 horas</b></li>
         <li>Anticipación mínima: <b>1 semana</b> &nbsp;|&nbsp; Anticipación máxima: <b>1 mes</b></li>
         <li>La reserva debe realizarse <b>en un mismo día</b></li>
+        <li><b>B3 (Completo)</b> ocupa todo el auditorio: no puede coincidir con B1 ni B2</li>
       </ul>
     </div>
 
@@ -86,7 +87,7 @@
         <label>Sección *</label>
         <select name="seccion" id="seccion" required onchange="cotizar()">
           <option th:each="s : ${secciones}" th:value="${s}"
-                  th:text="${s + ' (' + s.capacidad + ' personas)'}"
+                  th:text="${s.label + ' (' + s.capacidad + ' personas)'}"
                   th:selected="${seccion != null and seccion == s}"></option>
         </select>
 
@@ -167,7 +168,6 @@ function renderSlotsInicio() {
   for (let i = 0; i < totalSlots; i++) {
     const minutos   = APERTURA_H * 60 + i * STEP_MIN;
     const label     = minToStr(minutos);
-    // El último slot válido de inicio debe dejar al menos MIN_MINUTOS antes de CIERRE
     const maxInicio = CIERRE_H * 60 - MIN_MINUTOS;
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -206,7 +206,6 @@ function renderSlotsFin() {
   const minFinMin  = inicioMin + MIN_MINUTOS;
   const maxFinMin  = Math.min(inicioMin + MAX_HORAS * 60, CIERRE_H * 60);
 
-  // Slots de fin: desde minFinMin hasta maxFinMin en pasos de STEP_MIN
   for (let m = minFinMin; m <= maxFinMin; m += STEP_MIN) {
     const label = minToStr(m);
     const btn   = document.createElement('button');

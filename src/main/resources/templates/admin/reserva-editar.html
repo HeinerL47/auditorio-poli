@@ -41,7 +41,7 @@
         <select name="seccion">
           <option th:each="s : ${secciones}"
                   th:value="${s}"
-                  th:text="${s}"
+                  th:text="${s.label}"
                   th:selected="${s == reserva.seccion}"></option>
         </select>
       </div>

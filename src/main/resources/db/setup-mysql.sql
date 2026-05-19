@@ -1,4 +1,6 @@
 -- Esquema actualizado para Auditorio Poli
+-- Secciones: B1, B2, B3 (Completo = auditorio completo)
+-- B3 ocupa todo el auditorio: no puede coincidir con B1 ni B2
 -- Roles: ADMIN_AUDITORIO, OPERATIVO (con sub-rol tipoOperativo), SOLICITANTE (con tipoSolicitante)
 -- tipoOperativo: ASISTENTE, TECNOLOGIA, AUDIOVISUAL, INFRAESTRUCTURA, OPERACIONES
 -- tipoSolicitante: DOCENTE, ADMINISTRATIVO, EXTERNO
@@ -57,3 +59,9 @@ CREATE TABLE IF NOT EXISTS reservas (
   recordatorio_enviado TINYINT(1) DEFAULT 0,
   FOREIGN KEY (solicitante_id) REFERENCES usuarios(id)
 );
+
+-- MIGRACION: Si ya existe una BD con registros 'COMPLETO', ejecutar:
+-- UPDATE reservas SET seccion = 'B3' WHERE seccion = 'COMPLETO';
+-- UPDATE bloqueos SET seccion = 'B3' WHERE seccion = 'COMPLETO';
+-- UPDATE tarifas SET seccion = 'B3' WHERE seccion = 'COMPLETO';
+-- DELETE FROM tarifas WHERE seccion = 'COMPLETO';

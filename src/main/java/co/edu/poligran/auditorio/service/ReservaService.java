@@ -103,7 +103,7 @@ public class ReservaService {
         for (Reserva otra : sol) {
             if (seccionesIncompatibles(otra.getSeccion(), seccion))
                 throw new IllegalArgumentException("Conflicto con reserva #" + otra.getId()
-                        + " (" + otra.getSeccion() + ", " + otra.getEstado() + ")");
+                        + " (" + otra.getSeccion().getLabel() + ", " + otra.getEstado() + ")");
         }
     }
 
@@ -118,8 +118,13 @@ public class ReservaService {
         return inicio.isBefore(b.getFin()) && fin.isAfter(b.getInicio());
     }
 
+    /**
+     * Dos secciones son incompatibles si:
+     * - Son la misma sección (no pueden haber dos reservas de B1 al mismo tiempo)
+     * - Una de ellas es B3 (Completo), que abarca todo el auditorio y es incompatible con B1 y B2
+     */
     private boolean seccionesIncompatibles(Seccion a, Seccion b) {
-        return a == b || a == Seccion.COMPLETO || b == Seccion.COMPLETO;
+        return a == b || a == Seccion.B3 || b == Seccion.B3;
     }
 
     @Transactional

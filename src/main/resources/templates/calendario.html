@@ -34,8 +34,8 @@
       <div>
         <label for="filtroSeccion">Configuracion</label>
         <select id="filtroSeccion">
-          <option value="">Todas (B1, B2, B3)</option>
-          <option th:each="s : ${secciones}" th:value="${s}" th:text="${s}"></option>
+          <option value="">Todas (B1, B2, B3 Completo)</option>
+          <option th:each="s : ${secciones}" th:value="${s}" th:text="${s.label}"></option>
         </select>
       </div>
       <button type="button" class="btn btn-amarillo" id="btnRefrescar">Actualizar</button>
@@ -44,8 +44,7 @@
       <span style="font-weight:700;color:#0F385A;">Referencias:</span>
       <span class="leyenda-item"><span class="leyenda-dot" style="background:#1f6feb;"></span> B1</span>
       <span class="leyenda-item"><span class="leyenda-dot" style="background:#2da44e;"></span> B2</span>
-      <span class="leyenda-item"><span class="leyenda-dot" style="background:#bf8700;"></span> B3</span>
-      <span class="leyenda-item"><span class="leyenda-dot" style="background:#cf222e;"></span> Auditorio completo</span>
+      <span class="leyenda-item"><span class="leyenda-dot" style="background:#cf222e;"></span> B3 (Completo)</span>
       <span class="leyenda-item"><span class="leyenda-dot" style="background:#6b2737;"></span> Bloqueo</span>
       <span class="leyenda-item"><span class="leyenda-dot" style="background:#1f6feb99;border:1px dashed #888;"></span> Pendiente</span>
     </div>

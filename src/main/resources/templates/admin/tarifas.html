@@ -23,7 +23,7 @@
       <tbody>
         <tr th:each="t : ${tarifas}">
           <form th:action="@{|/admin/tarifas/${t.id}|}" method="post">
-            <td th:text="${t.seccion}"></td>
+            <td th:text="${t.seccion.label}"></td>
             <td><input type="number" name="valorHora" th:value="${t.valorHora}" required/></td>
             <td><button class="btn">Actualizar</button></td>
           </form>

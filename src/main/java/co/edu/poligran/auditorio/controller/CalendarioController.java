@@ -34,7 +34,7 @@ public class CalendarioController {
 
     @GetMapping("/calendario")
     public String calendario(Model m) {
-        m.addAttribute("secciones", List.of(Seccion.B1, Seccion.B2, Seccion.B3, Seccion.COMPLETO));
+        m.addAttribute("secciones", List.of(Seccion.B1, Seccion.B2, Seccion.B3));
         return "calendario";
     }
 
@@ -77,11 +77,14 @@ public class CalendarioController {
         return eventos;
     }
 
-    /** Muestra eventos de la seccion filtrada y reservas/bloqueos de auditorio completo. */
+    /**
+     * Muestra eventos de la sección filtrada.
+     * B3 (Completo) siempre se muestra porque afecta a todas las secciones.
+     */
     private boolean aplicaFiltroSeccion(Seccion evento, Seccion filtro) {
         if (filtro == null) return true;
         if (evento == null) return true;
-        if (evento == Seccion.COMPLETO) return true;
+        if (evento == Seccion.B3) return true;
         return evento == filtro;
     }
 
@@ -105,7 +108,7 @@ public class CalendarioController {
         Map<String, Object> m = new HashMap<>();
         m.put("id", "r-" + r.getId());
         String prefijo = r.getEstado() == EstadoReserva.PENDIENTE ? "[Pendiente] " : "";
-        m.put("title", prefijo + r.getSeccion() + " \u2014 " + r.getTipoEvento());
+        m.put("title", prefijo + r.getSeccion().getLabel() + " \u2014 " + r.getTipoEvento());
         m.put("start", r.getInicio().toString());
         m.put("end", r.getFin().toString());
         m.put("color", colorPorSeccion(r.getSeccion().name(), r.getEstado()));
@@ -119,8 +122,8 @@ public class CalendarioController {
     private Map<String, Object> toBloqueoEvento(Bloqueo b, LocalDateTime inicio, LocalDateTime fin) {
         Map<String, Object> m = new HashMap<>();
         m.put("id", "b-" + b.getId() + "-" + inicio.toLocalDate());
-        m.put("title", "\u26D4 " + b.getMotivo()
-                + (b.getSeccion() != null ? " [" + b.getSeccion() + "]" : " [Todo]"));
+        String secLabel = b.getSeccion() != null ? b.getSeccion().getLabel() : "Todo el auditorio";
+        m.put("title", "\u26D4 " + b.getMotivo() + " [" + secLabel + "]");
         m.put("start", inicio.toString());
         m.put("end", fin.toString());
         m.put("color", "#6b2737");
@@ -135,8 +138,8 @@ public class CalendarioController {
         String base = switch (s) {
             case "B1" -> "#1f6feb";
             case "B2" -> "#2da44e";
-            case "B3" -> "#bf8700";
-            default -> "#cf222e";
+            case "B3" -> "#cf222e";
+            default   -> "#8b5cf6";
         };
         if (estado == EstadoReserva.PENDIENTE) {
             return base + "99";

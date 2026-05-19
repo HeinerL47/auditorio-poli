@@ -72,8 +72,7 @@ public class DataSeeder implements CommandLineRunner {
         if (tarifas.count() == 0) {
             tarifas.save(Tarifa.builder().seccion(Seccion.B1).valorHora(new BigDecimal("80000")).build());
             tarifas.save(Tarifa.builder().seccion(Seccion.B2).valorHora(new BigDecimal("80000")).build());
-            tarifas.save(Tarifa.builder().seccion(Seccion.B3).valorHora(new BigDecimal("150000")).build());
-            tarifas.save(Tarifa.builder().seccion(Seccion.COMPLETO).valorHora(new BigDecimal("280000")).build());
+            tarifas.save(Tarifa.builder().seccion(Seccion.B3).valorHora(new BigDecimal("280000")).build());
         }
 
         // ── Bloqueos recurrentes (solo si no existen) ──────────────────────
@@ -85,7 +84,7 @@ public class DataSeeder implements CommandLineRunner {
                     .seccion(Seccion.B3).diaSemana(DayOfWeek.WEDNESDAY)
                     .horaInicio(LocalTime.of(10,0)).horaFin(LocalTime.of(12,0)).recurrente(true).build());
             bloqueos.save(Bloqueo.builder().motivo("Mantenimiento general")
-                    .seccion(Seccion.COMPLETO).diaSemana(DayOfWeek.SUNDAY)
+                    .seccion(Seccion.B3).diaSemana(DayOfWeek.SUNDAY)
                     .horaInicio(LocalTime.of(8,0)).horaFin(LocalTime.of(21,0)).recurrente(true).build());
         }
     }
@@ -97,7 +96,6 @@ public class DataSeeder implements CommandLineRunner {
     private void seedIfAbsent(String correo, String nombre, String doc, String pass,
                                Rol rol, TipoSolicitante tipoSol, TipoOperativo tipoOp) {
         if (!usuarios.existsByCorreoIgnoreCase(correo)) {
-            // Si el documento ya existe (migraciones previas), usar uno único
             String docFinal = doc;
             if (usuarios.existsByDocumento(doc)) {
                 docFinal = doc + "_seed";
