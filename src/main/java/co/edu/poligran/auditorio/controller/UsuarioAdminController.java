@@ -1,6 +1,7 @@
 package co.edu.poligran.auditorio.controller;
 
 import co.edu.poligran.auditorio.model.Rol;
+import co.edu.poligran.auditorio.model.TipoOperativo;
 import co.edu.poligran.auditorio.model.TipoSolicitante;
 import co.edu.poligran.auditorio.model.Usuario;
 import co.edu.poligran.auditorio.service.UsuarioService;
@@ -29,7 +30,8 @@ public class UsuarioAdminController {
     public String nuevoForm(Model m) {
         m.addAttribute("usuario", new Usuario());
         m.addAttribute("roles", Rol.values());
-        m.addAttribute("tipos", TipoSolicitante.values());
+        m.addAttribute("tiposSolicitante", TipoSolicitante.values());
+        m.addAttribute("tiposOperativo", TipoOperativo.values());
         m.addAttribute("modo", "crear");
         return "admin/usuario-form";
     }
@@ -43,10 +45,11 @@ public class UsuarioAdminController {
                         @RequestParam String password,
                         @RequestParam Rol rol,
                         @RequestParam(required = false) TipoSolicitante tipoSolicitante,
+                        @RequestParam(required = false) TipoOperativo tipoOperativo,
                         RedirectAttributes ra) {
         try {
             usuarios.crearPorAdmin(nombre, documento, correo, telefono, organizacion,
-                    password, rol, tipoSolicitante);
+                    password, rol, tipoSolicitante, tipoOperativo);
             ra.addFlashAttribute("ok", "Usuario creado correctamente");
             return "redirect:/admin/usuarios";
         } catch (IllegalArgumentException e) {
@@ -59,7 +62,8 @@ public class UsuarioAdminController {
     public String editarForm(@PathVariable Long id, Model m) {
         m.addAttribute("usuario", usuarios.porId(id));
         m.addAttribute("roles", Rol.values());
-        m.addAttribute("tipos", TipoSolicitante.values());
+        m.addAttribute("tiposSolicitante", TipoSolicitante.values());
+        m.addAttribute("tiposOperativo", TipoOperativo.values());
         m.addAttribute("modo", "editar");
         return "admin/usuario-form";
     }
@@ -71,9 +75,10 @@ public class UsuarioAdminController {
                          @RequestParam(required = false) String organizacion,
                          @RequestParam Rol rol,
                          @RequestParam(required = false) TipoSolicitante tipoSolicitante,
+                         @RequestParam(required = false) TipoOperativo tipoOperativo,
                          RedirectAttributes ra) {
         try {
-            usuarios.actualizar(id, nombre, telefono, organizacion, rol, tipoSolicitante);
+            usuarios.actualizar(id, nombre, telefono, organizacion, rol, tipoSolicitante, tipoOperativo);
             ra.addFlashAttribute("ok", "Usuario actualizado");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("error", e.getMessage());
@@ -102,7 +107,7 @@ public class UsuarioAdminController {
                                 RedirectAttributes ra) {
         try {
             usuarios.resetPassword(id, nuevaPassword);
-            ra.addFlashAttribute("ok", "Contrasena actualizada");
+            ra.addFlashAttribute("ok", "Contraseña actualizada");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("error", e.getMessage());
         }

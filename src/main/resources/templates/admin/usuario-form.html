@@ -34,8 +34,8 @@
       <input type="email" name="correo" th:value="${usuario.correo}"
              th:readonly="${modo != 'crear'}" required/>
       <small style="color:#666">
-        Internos: debe terminar en <b>@poligran.edu.co</b><br/>
-        Externos: cualquier otro dominio
+        Internos (Admin, Operativo, Docente, Administrativo): <b>@poligran.edu.co</b><br/>
+        Agente Externo: cualquier otro dominio
       </small>
 
       <label>Teléfono</label>
@@ -44,28 +44,56 @@
       <label>Organización / Dependencia</label>
       <input type="text" name="organizacion" th:value="${usuario.organizacion}"/>
 
-      <label th:if="${modo == 'crear'}">Contraseña inicial *</label>
-      <input th:if="${modo == 'crear'}" type="password" name="password" minlength="6" required/>
-      <small th:if="${modo == 'crear'}" style="color:#666">Mínimo 6 caracteres. El usuario podrá cambiarla luego.</small>
+      <th:block th:if="${modo == 'crear'}">
+        <label>Contraseña inicial *</label>
+        <input type="password" name="password" minlength="6" required/>
+        <small style="color:#666">Mínimo 6 caracteres.</small>
+      </th:block>
 
+      <!-- ROL -->
       <label>Rol *</label>
-      <select name="rol" id="rol" required onchange="toggleTipo()">
+      <select name="rol" id="rol" required onchange="toggleSubTipo()">
         <option value="">-- Seleccione --</option>
         <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"
                 th:selected="${usuario.rol != null and usuario.rol == r}"></option>
       </select>
 
-      <label id="lblTipo">Tipo de solicitante *</label>
-      <select name="tipoSolicitante" id="tipoSolicitante">
-        <option value="">-- Seleccione --</option>
-        <option th:each="t : ${tipos}" th:value="${t}" th:text="${t}"
-                th:selected="${usuario.tipoSolicitante != null and usuario.tipoSolicitante == t}"></option>
-      </select>
-      <small style="color:#666">
-        Solo aplica si el rol es SOLICITANTE.<br/>
-        DOCENTE / ADMINISTRATIVO: usuarios internos del Politécnico (sin costo).<br/>
-        EXTERNO: persona u organización ajena al Politécnico (paga por hora).
-      </small>
+      <!-- SUB-ROL SOLICITANTE -->
+      <div id="bloque-solicitante" style="display:none">
+        <label id="lblTipoSol">Tipo de Solicitante *</label>
+        <select name="tipoSolicitante" id="tipoSolicitante">
+          <option value="">-- Seleccione --</option>
+          <option th:each="t : ${tiposSolicitante}" th:value="${t}"
+                  th:text="${t == T(co.edu.poligran.auditorio.model.TipoSolicitante).DOCENTE} ? 'Docente' :
+                            (t == T(co.edu.poligran.auditorio.model.TipoSolicitante).ADMINISTRATIVO) ? 'Administrativo' :
+                            'Agente Externo'"
+                  th:selected="${usuario.tipoSolicitante != null and usuario.tipoSolicitante == t}"></option>
+        </select>
+        <small style="color:#666">
+          <b>Docente / Administrativo</b>: internos del Politécnico (sin costo, correo @poligran.edu.co).<br/>
+          <b>Agente Externo</b>: persona u organización ajena al Politécnico (paga por hora, dominio externo).
+        </small>
+      </div>
+
+      <!-- SUB-ROL OPERATIVO -->
+      <div id="bloque-operativo" style="display:none">
+        <label id="lblTipoOp">Sub-rol Operativo *</label>
+        <select name="tipoOperativo" id="tipoOperativo">
+          <option value="">-- Seleccione --</option>
+          <option th:each="t : ${tiposOperativo}" th:value="${t}"
+                  th:text="${t == T(co.edu.poligran.auditorio.model.TipoOperativo).ASISTENTE} ? 'Asistente (mismos permisos que Admin)' :
+                            (t == T(co.edu.poligran.auditorio.model.TipoOperativo).TECNOLOGIA) ? 'Tecnología' :
+                            (t == T(co.edu.poligran.auditorio.model.TipoOperativo).AUDIOVISUAL) ? 'Audiovisual' :
+                            (t == T(co.edu.poligran.auditorio.model.TipoOperativo).INFRAESTRUCTURA) ? 'Infraestructura' :
+                            'Operaciones'"
+                  th:selected="${usuario.tipoOperativo != null and usuario.tipoOperativo == t}"></option>
+        </select>
+        <small style="color:#666">
+          <b>Asistente</b>: tiene los mismos permisos que el Administrador del auditorio.<br/>
+          Los demás sub-roles (Tecnología, Audiovisual, Infraestructura, Operaciones)
+          pueden ingresar y ver reservas, pero no tienen permisos de administración.
+        </small>
+      </div>
 
       <br/><br/>
       <button class="btn" type="submit"
@@ -74,17 +102,26 @@
   </div>
 </main>
 <script>
-  function toggleTipo() {
-    var rol = document.getElementById('rol').value;
-    var sel = document.getElementById('tipoSolicitante');
-    var lbl = document.getElementById('lblTipo');
-    var esSol = rol === 'SOLICITANTE';
-    sel.style.display = esSol ? '' : 'none';
-    lbl.style.display = esSol ? '' : 'none';
-    sel.required = esSol;
-    if (!esSol) sel.value = '';
-  }
-  toggleTipo();
+function toggleSubTipo() {
+  var rol = document.getElementById('rol').value;
+  var bloqSol = document.getElementById('bloque-solicitante');
+  var bloqOp  = document.getElementById('bloque-operativo');
+  var selSol  = document.getElementById('tipoSolicitante');
+  var selOp   = document.getElementById('tipoOperativo');
+
+  var esSol = (rol === 'SOLICITANTE');
+  var esOp  = (rol === 'OPERATIVO');
+
+  bloqSol.style.display = esSol ? '' : 'none';
+  bloqOp.style.display  = esOp  ? '' : 'none';
+
+  selSol.required = esSol;
+  selOp.required  = esOp;
+
+  if (!esSol) selSol.value = '';
+  if (!esOp)  selOp.value  = '';
+}
+toggleSubTipo();
 </script>
 </body>
 </html>

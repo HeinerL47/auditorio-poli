@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
-  <title>Registro - Auditorio Poligrán</title>
+  <title>Registro Agente Externo - Auditorio Poligrán</title>
   <link rel="stylesheet" href="/css/styles.css"/>
 </head>
 <body>
@@ -10,7 +10,7 @@
   <div class="brand">
     <img src="/images/poli-logo.jpg" alt="Politécnico Grancolombiano"/>
     <div>
-      <h1>Registro de persona externa</h1>
+      <h1>Registro de Agente Externo</h1>
       <small>Politécnico Grancolombiano</small>
     </div>
   </div>
@@ -18,20 +18,55 @@
 </header>
 <main>
   <div class="card login-box">
-    <p style="color:#666"><b>Solo para personas externas</b> (empresas, particulares).<br/>
-    Docentes y administrativos ingresan con su correo institucional <b>@poligran.edu.co</b> sin registrarse.</p>
+    <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:12px;margin-bottom:16px">
+      <b>⚠ Este formulario es exclusivo para Agentes Externos</b>
+      (empresas, organizaciones o personas ajenas al Politécnico).<br/><br/>
+      <b>Docentes y Administrativos</b> del Politécnico Grancolombiano <b>no</b> deben registrarse aquí.
+      Su cuenta es creada por el administrador del auditorio y deben iniciar sesión directamente
+      con su <b>correo institucional @poligran.edu.co</b>.
+    </div>
+
     <div th:if="${error}" class="error" th:text="${error}"></div>
-    <form method="post" action="/registro">
-      <label>Nombre completo</label><input name="nombre" required/>
-      <label>Documento</label><input name="documento" required/>
-      <label>Correo</label><input type="email" name="correo" required/>
-      <label>Teléfono</label><input name="telefono"/>
-      <label>Organización</label><input name="organizacion"/>
-      <label>Contraseña</label><input type="password" name="password" required/>
-      <button class="btn" type="submit">Registrarme</button>
+    <form method="post" action="/registro" id="formRegistro">
+      <label>Nombre completo *</label>
+      <input name="nombre" required/>
+
+      <label>Documento de identidad *</label>
+      <input name="documento" required/>
+
+      <label>Correo electrónico * <small style="color:#c00">(NO puede ser @poligran.edu.co)</small></label>
+      <input type="email" name="correo" id="correoInput" required
+             oninput="validarCorreo(this.value)"/>
+      <small id="correoError" style="color:#c00;display:none">
+        Los agentes externos no pueden usar correo @poligran.edu.co
+      </small>
+
+      <label>Teléfono</label>
+      <input name="telefono"/>
+
+      <label>Organización / Empresa</label>
+      <input name="organizacion"/>
+
+      <label>Contraseña * <small>(mínimo 6 caracteres)</small></label>
+      <input type="password" name="password" minlength="6" required/>
+
+      <button class="btn" type="submit" id="btnRegistro">Registrarme como Agente Externo</button>
     </form>
     <p><a href="/login">Volver a iniciar sesión</a></p>
   </div>
 </main>
+<script>
+function validarCorreo(val) {
+  const err = document.getElementById('correoError');
+  const btn = document.getElementById('btnRegistro');
+  if (val.toLowerCase().endsWith('@poligran.edu.co')) {
+    err.style.display = '';
+    btn.disabled = true;
+  } else {
+    err.style.display = 'none';
+    btn.disabled = false;
+  }
+}
+</script>
 </body>
 </html>

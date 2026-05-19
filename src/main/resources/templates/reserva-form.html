@@ -2,60 +2,289 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
-  <title>Nueva reserva</title>
+  <title>Nueva reserva - Auditorio Poligrán</title>
   <link rel="stylesheet" href="/css/styles.css"/>
+  <style>
+    .horarios-disponibles { display:none; margin-top:8px; }
+    .horarios-disponibles.visible { display:block; }
+    .slots-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .slot-btn {
+      padding:6px 14px; border:2px solid #003366; background:#fff;
+      color:#003366; border-radius:4px; cursor:pointer; font-weight:500;
+      transition:background .15s,color .15s;
+    }
+    .slot-btn:hover { background:#003366; color:#fff; }
+    .slot-btn.selected { background:#003366; color:#fff; }
+    .slot-btn:disabled, .slot-btn.no-disponible {
+      border-color:#ccc; color:#aaa; cursor:not-allowed; background:#f5f5f5;
+    }
+    .info-restricciones {
+      background:#fffbe6; border:1px solid #ffe066; border-radius:4px;
+      padding:10px 16px; margin-bottom:16px; font-size:.9em;
+    }
+    .info-restricciones ul { margin:4px 0 0 16px; }
+    #seccion-fin { margin-top:16px; }
+  </style>
 </head>
 <body>
 <header>
   <div class="brand">
     <img src="/images/poli-logo.jpg" alt="Politécnico Grancolombiano"/>
-    <div>
-      <h1>Nueva reserva</h1>
-      <small>Politécnico Grancolombiano</small>
-    </div>
+    <div><h1>Nueva reserva</h1><small>Politécnico Grancolombiano</small></div>
   </div>
-  <nav><a href="/dashboard">Volver</a></nav>
+  <nav><a href="/dashboard">Volver</a><a href="/mis-reservas">Mis Reservas</a></nav>
 </header>
 <main>
   <div class="card">
     <div th:if="${error}" class="error" th:text="${error}"></div>
-    <form method="post" action="/reservas/nueva">
-      <div class="grid-2">
-        <div>
-          <label>Inicio</label>
-          <input type="datetime-local" name="inicio" id="inicio" th:value="${inicio}" required/>
-        </div>
-        <div>
-          <label>Fin (máx. 4h)</label>
-          <input type="datetime-local" name="fin" id="fin" th:value="${fin}" required/>
+
+    <!-- Restricciones visibles -->
+    <div class="info-restricciones">
+      <b>Reglas de reserva:</b>
+      <ul>
+        <li>Horario disponible: <b>8:00 AM – 9:00 PM</b></li>
+        <li>Duración mínima: <b>1 hora</b> &nbsp;|&nbsp; Duración máxima: <b>4 horas</b></li>
+        <li>Anticipación mínima: <b>1 semana</b> &nbsp;|&nbsp; Anticipación máxima: <b>1 mes</b></li>
+        <li>La reserva debe realizarse <b>en un mismo día</b></li>
+      </ul>
+    </div>
+
+    <form method="post" action="/reservas/nueva" id="formReserva">
+      <!-- Campos ocultos que se envían al servidor -->
+      <input type="hidden" name="inicio" id="inicioHidden" th:value="${inicio}"/>
+      <input type="hidden" name="fin"    id="finHidden"    th:value="${fin}"/>
+
+      <!-- ── Sección 1: Fecha de inicio ────────────────────── -->
+      <label>Fecha del evento *</label>
+      <input type="date" id="fechaInicio" required
+             th:value="${inicio != null ? #strings.substring(inicio,0,10) : ''}"
+             onchange="onFechaChange()"/>
+      <small style="color:#666">
+        Solo fechas entre <b id="lblMin"></b> y <b id="lblMax"></b>.
+      </small>
+
+      <!-- ── Sección 2: Hora de inicio ─────────────────────── -->
+      <div id="seccion-inicio" style="display:none; margin-top:16px">
+        <label>Hora de inicio *</label>
+        <div class="slots-grid" id="slots-inicio"></div>
+      </div>
+
+      <!-- ── Sección 3: Hora de fin ────────────────────────── -->
+      <div id="seccion-fin" style="display:none">
+        <label>Hora de fin * <small style="color:#666">(mínimo 1 h, máximo 4 h desde el inicio)</small></label>
+        <div class="slots-grid" id="slots-fin"></div>
+      </div>
+
+      <!-- ── Resumen seleccionado ──────────────────────────── -->
+      <div id="resumen-horario" style="display:none; margin-top:12px; padding:8px 14px;
+           background:#e8f5e9; border-radius:4px; font-weight:500; color:#1b5e20">
+        Seleccionado: <span id="resumen-texto"></span>
+      </div>
+
+      <!-- ── Sección, tipo de evento, especificaciones ──────── -->
+      <div style="margin-top:20px">
+        <label>Sección *</label>
+        <select name="seccion" id="seccion" required onchange="cotizar()">
+          <option th:each="s : ${secciones}" th:value="${s}"
+                  th:text="${s + ' (' + s.capacidad + ' personas)'}"
+                  th:selected="${seccion != null and seccion == s}"></option>
+        </select>
+
+        <label>Tipo de evento *</label>
+        <input name="tipoEvento" th:value="${tipoEvento}" required/>
+
+        <label>Especificaciones / extras (sillas, mesas, micrófonos, video, etc.)</label>
+        <textarea name="especificaciones" rows="4" th:text="${especificaciones}"></textarea>
+
+        <div class="card" style="background:#fffbe6" th:if="${usuario.esExterno()}">
+          <b>Cotización estimada:</b> <span id="cotizacion">--</span>
+          <button class="btn btn-amarillo" type="button" onclick="cotizar()">Cotizar</button>
         </div>
       </div>
-      <label>Sección</label>
-      <select name="seccion" id="seccion" required>
-        <option th:each="s : ${secciones}" th:value="${s}" th:text="${s + ' (' + s.capacidad + ' personas)'}"></option>
-      </select>
-      <label>Tipo de evento</label>
-      <input name="tipoEvento" th:value="${tipoEvento}" required/>
-      <label>Especificaciones / extras (sillas, mesas, micrófonos, video, etc.)</label>
-      <textarea name="especificaciones" rows="4" th:text="${especificaciones}"></textarea>
-      <div class="card" style="background:#fffbe6">
-        <b>Cotización (solo externos):</b>
-        <span id="cotizacion">--</span>
-        <button class="btn btn-amarillo" type="button" onclick="cotizar()">Cotizar</button>
-      </div>
-      <button class="btn" type="submit">Crear reserva</button>
+
+      <button class="btn" type="submit" id="btnSubmit" disabled>Crear reserva</button>
     </form>
-    <p><b>Reglas:</b> 8:00–21:00, máximo 4 horas, mínimo 1 semana de anticipación, máximo 1 mes.</p>
   </div>
 </main>
 <script>
+// ── Constantes de negocio ──────────────────────────────────────────────────
+const APERTURA_H = 8, CIERRE_H = 21;
+const MIN_MINUTOS = 60, MAX_HORAS = 4;
+const MIN_DIAS = 7, MAX_DIAS = 31;
+const STEP_MIN = 30; // slots cada 30 minutos
+
+let horaInicio = null; // string "HH:MM"
+let horaFin    = null;
+let fechaSel   = null;
+
+// ── Inicialización ─────────────────────────────────────────────────────────
+(function init() {
+  const hoy   = new Date();
+  const minD  = addDays(hoy, MIN_DIAS);
+  const maxD  = addDays(hoy, MAX_DIAS);
+  const inp   = document.getElementById('fechaInicio');
+  inp.min = toDateStr(minD);
+  inp.max = toDateStr(maxD);
+
+  document.getElementById('lblMin').textContent = formatFecha(minD);
+  document.getElementById('lblMax').textContent = formatFecha(maxD);
+
+  // Si el formulario fue enviado con errores, recuperar valores previos
+  const prevInicio = document.getElementById('inicioHidden').value;
+  const prevFin    = document.getElementById('finHidden').value;
+  if (prevInicio) {
+    fechaSel   = prevInicio.substring(0, 10);
+    horaInicio = prevInicio.substring(11, 16);
+    horaFin    = prevFin    ? prevFin.substring(11, 16) : null;
+    document.getElementById('fechaInicio').value = fechaSel;
+    renderSlotsInicio();
+    if (horaInicio) renderSlotsFin();
+    actualizarResumen();
+    validarFormulario();
+  }
+})();
+
+function onFechaChange() {
+  fechaSel   = document.getElementById('fechaInicio').value;
+  horaInicio = null;
+  horaFin    = null;
+  if (fechaSel) {
+    renderSlotsInicio();
+    document.getElementById('seccion-inicio').style.display = '';
+    document.getElementById('seccion-fin').style.display = 'none';
+  } else {
+    document.getElementById('seccion-inicio').style.display = 'none';
+    document.getElementById('seccion-fin').style.display = 'none';
+  }
+  actualizarResumen();
+  validarFormulario();
+}
+
+function renderSlotsInicio() {
+  const container = document.getElementById('slots-inicio');
+  container.innerHTML = '';
+  const totalSlots = (CIERRE_H - APERTURA_H) * (60 / STEP_MIN);
+  for (let i = 0; i < totalSlots; i++) {
+    const minutos   = APERTURA_H * 60 + i * STEP_MIN;
+    const label     = minToStr(minutos);
+    // El último slot válido de inicio debe dejar al menos MIN_MINUTOS antes de CIERRE
+    const maxInicio = CIERRE_H * 60 - MIN_MINUTOS;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = label;
+    btn.className = 'slot-btn';
+    if (minutos > maxInicio) {
+      btn.disabled = true;
+      btn.classList.add('no-disponible');
+      btn.title = 'No queda tiempo mínimo antes del cierre';
+    } else if (label === horaInicio) {
+      btn.classList.add('selected');
+    }
+    btn.addEventListener('click', () => seleccionarInicio(label, btn));
+    container.appendChild(btn);
+  }
+  document.getElementById('seccion-inicio').style.display = '';
+}
+
+function seleccionarInicio(hora, btnEl) {
+  horaInicio = hora;
+  horaFin    = null;
+  document.querySelectorAll('#slots-inicio .slot-btn').forEach(b => b.classList.remove('selected'));
+  btnEl.classList.add('selected');
+  renderSlotsFin();
+  actualizarResumen();
+  validarFormulario();
+}
+
+function renderSlotsFin() {
+  if (!horaInicio) return;
+  const container = document.getElementById('slots-fin');
+  container.innerHTML = '';
+  const [hh, mm] = horaInicio.split(':').map(Number);
+  const inicioMin = hh * 60 + mm;
+
+  const minFinMin  = inicioMin + MIN_MINUTOS;
+  const maxFinMin  = Math.min(inicioMin + MAX_HORAS * 60, CIERRE_H * 60);
+
+  // Slots de fin: desde minFinMin hasta maxFinMin en pasos de STEP_MIN
+  for (let m = minFinMin; m <= maxFinMin; m += STEP_MIN) {
+    const label = minToStr(m);
+    const btn   = document.createElement('button');
+    btn.type    = 'button';
+    btn.textContent = label;
+    btn.className   = 'slot-btn';
+    if (label === horaFin) btn.classList.add('selected');
+    btn.addEventListener('click', () => seleccionarFin(label, btn));
+    container.appendChild(btn);
+  }
+  document.getElementById('seccion-fin').style.display = '';
+}
+
+function seleccionarFin(hora, btnEl) {
+  horaFin = hora;
+  document.querySelectorAll('#slots-fin .slot-btn').forEach(b => b.classList.remove('selected'));
+  btnEl.classList.add('selected');
+  actualizarHiddens();
+  actualizarResumen();
+  validarFormulario();
+  cotizar();
+}
+
+function actualizarHiddens() {
+  if (fechaSel && horaInicio && horaFin) {
+    document.getElementById('inicioHidden').value = fechaSel + 'T' + horaInicio;
+    document.getElementById('finHidden').value    = fechaSel + 'T' + horaFin;
+  }
+}
+
+function actualizarResumen() {
+  const div = document.getElementById('resumen-horario');
+  const txt = document.getElementById('resumen-texto');
+  if (fechaSel && horaInicio && horaFin) {
+    div.style.display = '';
+    txt.textContent   = fechaSel + '  ' + horaInicio + ' → ' + horaFin;
+  } else if (fechaSel && horaInicio) {
+    div.style.display = '';
+    txt.textContent   = fechaSel + '  desde ' + horaInicio + ' — selecciona hora de fin';
+  } else {
+    div.style.display = 'none';
+  }
+}
+
+function validarFormulario() {
+  const ok = !!(fechaSel && horaInicio && horaFin);
+  document.getElementById('btnSubmit').disabled = !ok;
+}
+
 async function cotizar() {
-  const fd = new FormData();
+  if (!horaInicio || !horaFin || !fechaSel) return;
+  const ini = fechaSel + 'T' + horaInicio;
+  const fin = fechaSel + 'T' + horaFin;
+  const fd  = new FormData();
   fd.append('seccion', document.getElementById('seccion').value);
-  fd.append('inicio', document.getElementById('inicio').value);
-  fd.append('fin', document.getElementById('fin').value);
+  fd.append('inicio', ini);
+  fd.append('fin', fin);
   const r = await fetch('/reservas/cotizar', { method: 'POST', body: fd });
-  if (r.ok) { const d = await r.json(); document.getElementById('cotizacion').textContent = '$ ' + d.costo; }
+  if (r.ok) {
+    const d = await r.json();
+    document.getElementById('cotizacion').textContent = '$ ' + d.costo;
+  }
+}
+
+// ── Utilidades ─────────────────────────────────────────────────────────────
+function minToStr(totalMin) {
+  const h = Math.floor(totalMin / 60).toString().padStart(2,'0');
+  const m = (totalMin % 60).toString().padStart(2,'0');
+  return h + ':' + m;
+}
+function addDays(date, days) {
+  const d = new Date(date); d.setDate(d.getDate() + days); return d;
+}
+function toDateStr(d) {
+  return d.toISOString().substring(0, 10);
+}
+function formatFecha(d) {
+  return d.toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
 }
 </script>
 </body>

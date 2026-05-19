@@ -26,13 +26,15 @@ public class DashboardController {
     public String dashboard(@AuthenticationPrincipal UserDetails ud, Model m) {
         Usuario u = usuarios.porCorreo(ud.getUsername());
         m.addAttribute("usuario", u);
-        List<Reserva> mias;
-        if (u.getRol() == Rol.ADMIN_AUDITORIO || u.getRol() == Rol.OPERATIVO) {
-            mias = reservas.listarTodas();
+
+        // Admin y Asistente ven todas las reservas; los demás solo las propias
+        List<Reserva> lista;
+        if (u.getRol() == Rol.ADMIN_AUDITORIO || u.esAsistente() || u.getRol() == Rol.OPERATIVO) {
+            lista = reservas.listarTodas();
         } else {
-            mias = reservas.listarDe(u);
+            lista = reservas.listarDe(u);
         }
-        m.addAttribute("reservas", mias);
+        m.addAttribute("reservas", lista);
         m.addAttribute("pendientes", reservas.listarPendientes().size());
         return "dashboard";
     }

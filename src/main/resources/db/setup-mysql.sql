@@ -1,32 +1,59 @@
--- ============================================================
---  Script para crear la base de datos en MySQL
---  Ejecutar UNA SOLA VEZ antes de arrancar la aplicacion
--- ============================================================
+-- Esquema actualizado para Auditorio Poli
+-- Roles: ADMIN_AUDITORIO, OPERATIVO (con sub-rol tipoOperativo), SOLICITANTE (con tipoSolicitante)
+-- tipoOperativo: ASISTENTE, TECNOLOGIA, AUDIOVISUAL, INFRAESTRUCTURA, OPERACIONES
+-- tipoSolicitante: DOCENTE, ADMINISTRATIVO, EXTERNO
 
-CREATE DATABASE IF NOT EXISTS auditorio_poli
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
--- (Opcional) usuario dedicado distinto a root
--- CREATE USER 'auditorio'@'localhost' IDENTIFIED BY 'auditorio123';
--- GRANT ALL PRIVILEGES ON auditorio_poli.* TO 'auditorio'@'localhost';
--- FLUSH PRIVILEGES;
-
--- Las tablas (usuarios, reservas, bloqueos, tarifas) las crea
--- Hibernate automaticamente al iniciar la aplicacion gracias a
--- spring.jpa.hibernate.ddl-auto=update
---
--- Los usuarios y datos iniciales los inserta DataSeeder.java al
--- detectar que la tabla esta vacia. Despues, los nuevos usuarios
--- solo se crean a traves del registro publico (/registro).
-
+CREATE DATABASE IF NOT EXISTS auditorio_poli CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE auditorio_poli;
 
--- Columna opcional (Hibernate ddl-auto=update la crea automaticamente):
--- ALTER TABLE reservas ADD COLUMN motivo_rechazo VARCHAR(2000) NULL;
+CREATE TABLE IF NOT EXISTS usuarios (
+  id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+  nombre        VARCHAR(200) NOT NULL,
+  documento     VARCHAR(50)  NOT NULL UNIQUE,
+  correo        VARCHAR(200) NOT NULL UNIQUE,
+  telefono      VARCHAR(50),
+  organizacion  VARCHAR(200),
+  password      VARCHAR(255) NOT NULL,
+  rol           VARCHAR(30)  NOT NULL,
+  tipo_solicitante VARCHAR(30),
+  tipo_operativo   VARCHAR(30),
+  activo        TINYINT(1)   NOT NULL DEFAULT 1
+);
 
--- Verificar despues de la primera ejecucion:
--- SELECT id, nombre, correo, rol, tipo_solicitante FROM usuarios;
--- SELECT id, estado, motivo_rechazo FROM reservas;
--- SELECT * FROM bloqueos;
--- SELECT * FROM tarifas;
+CREATE TABLE IF NOT EXISTS tarifas (
+  id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+  seccion    VARCHAR(30) NOT NULL UNIQUE,
+  valor_hora DECIMAL(12,2) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS bloqueos (
+  id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+  motivo      VARCHAR(300) NOT NULL,
+  seccion     VARCHAR(30),
+  dia_semana  VARCHAR(20),
+  hora_inicio TIME,
+  hora_fin    TIME,
+  inicio      DATETIME,
+  fin         DATETIME,
+  recurrente  TINYINT(1) NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS reservas (
+  id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+  solicitante_id    BIGINT NOT NULL,
+  inicio            DATETIME NOT NULL,
+  fin               DATETIME NOT NULL,
+  seccion           VARCHAR(30) NOT NULL,
+  tipo_evento       VARCHAR(300) NOT NULL,
+  especificaciones  TEXT,
+  estado            VARCHAR(30) NOT NULL,
+  costo             DECIMAL(12,2),
+  observaciones     TEXT,
+  motivo_rechazo    TEXT,
+  motivo_cancelacion TEXT,
+  creada_en         DATETIME,
+  decidida_en       DATETIME,
+  decidida_por      VARCHAR(200),
+  recordatorio_enviado TINYINT(1) DEFAULT 0,
+  FOREIGN KEY (solicitante_id) REFERENCES usuarios(id)
+);

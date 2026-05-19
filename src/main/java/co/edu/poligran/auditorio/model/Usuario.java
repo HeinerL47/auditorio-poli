@@ -34,6 +34,10 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private TipoSolicitante tipoSolicitante;
 
+    /** Sub-rol dentro de OPERATIVO */
+    @Enumerated(EnumType.STRING)
+    private TipoOperativo tipoOperativo;
+
     private boolean activo = true;
 
     public Usuario() {}
@@ -56,10 +60,15 @@ public class Usuario {
     public void setRol(Rol rol) { this.rol = rol; }
     public TipoSolicitante getTipoSolicitante() { return tipoSolicitante; }
     public void setTipoSolicitante(TipoSolicitante t) { this.tipoSolicitante = t; }
+    public TipoOperativo getTipoOperativo() { return tipoOperativo; }
+    public void setTipoOperativo(TipoOperativo t) { this.tipoOperativo = t; }
     public boolean isActivo() { return activo; }
     public void setActivo(boolean activo) { this.activo = activo; }
 
     public boolean esExterno() { return tipoSolicitante == TipoSolicitante.EXTERNO; }
+
+    /** El asistente tiene los mismos permisos que el administrador del auditorio. */
+    public boolean esAsistente() { return rol == Rol.OPERATIVO && tipoOperativo == TipoOperativo.ASISTENTE; }
 
     public static Builder builder() { return new Builder(); }
     public static class Builder {
@@ -72,6 +81,7 @@ public class Usuario {
         public Builder password(String v) { u.password = v; return this; }
         public Builder rol(Rol v) { u.rol = v; return this; }
         public Builder tipoSolicitante(TipoSolicitante v) { u.tipoSolicitante = v; return this; }
+        public Builder tipoOperativo(TipoOperativo v) { u.tipoOperativo = v; return this; }
         public Builder activo(boolean v) { u.activo = v; return this; }
         public Usuario build() { return u; }
     }

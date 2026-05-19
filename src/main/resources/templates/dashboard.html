@@ -17,12 +17,13 @@
   <nav>
     <a href="/dashboard">Inicio</a>
     <a href="/calendario">Calendario</a>
-    <a sec:authorize="hasRole('SOLICITANTE')" href="/reservas/nueva">Nueva reserva</a>
-    <a sec:authorize="hasRole('ADMIN_AUDITORIO')" href="/admin/aprobaciones">Aprobaciones</a>
-    <a sec:authorize="hasRole('ADMIN_AUDITORIO')" href="/admin/usuarios">Usuarios</a>
-    <a sec:authorize="hasRole('ADMIN_AUDITORIO')" href="/admin/tarifas">Tarifas</a>
-    <a sec:authorize="hasRole('ADMIN_AUDITORIO')" href="/admin/bloqueos">Bloqueos</a>
-    <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','OPERATIVO')" href="/reportes">Reportes</a>
+    <a href="/mis-reservas">Mis Reservas</a>
+    <a sec:authorize="hasAnyRole('SOLICITANTE','ADMIN_AUDITORIO','ASISTENTE')" href="/reservas/nueva">Nueva reserva</a>
+    <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE')" href="/admin/aprobaciones">Aprobaciones</a>
+    <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE')" href="/admin/usuarios">Usuarios</a>
+    <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE')" href="/admin/tarifas">Tarifas</a>
+    <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE')" href="/admin/bloqueos">Bloqueos</a>
+    <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE','OPERATIVO')" href="/reportes">Reportes</a>
     <form method="post" action="/logout" style="display:inline">
       <button class="btn btn-amarillo" type="submit">Salir</button>
     </form>
@@ -31,15 +32,24 @@
 <main>
   <div class="card">
     <h2>Hola, <span th:text="${usuario.nombre}"></span></h2>
-    <p>Rol: <b th:text="${usuario.rol}"></b>
-       <span th:if="${usuario.tipoSolicitante != null}">(<span th:text="${usuario.tipoSolicitante}"></span>)</span></p>
-    <div sec:authorize="hasRole('ADMIN_AUDITORIO')">
-      <p><b th:text="${pendientes}"></b> reservas pendientes de aprobación</p>
+    <p>
+      Rol: <b th:text="${usuario.rol}"></b>
+      <span th:if="${usuario.tipoSolicitante != null}">
+        &mdash; Tipo: <b th:text="${usuario.tipoSolicitante}"></b>
+      </span>
+      <span th:if="${usuario.tipoOperativo != null}">
+        &mdash; Sub-rol: <b th:text="${usuario.tipoOperativo}"></b>
+      </span>
+    </p>
+    <div sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE')">
+      <p><b th:text="${pendientes}"></b> reserva(s) pendiente(s) de aprobación.
+         <a href="/admin/aprobaciones">Ver aprobaciones</a></p>
     </div>
   </div>
 
   <div class="card">
     <h3>Reservas</h3>
+    <p><a href="/mis-reservas" class="btn">Ver detalle de reservas</a></p>
     <div th:if="${param.ok}" class="ok">Reserva creada correctamente</div>
     <table>
       <thead>
@@ -57,23 +67,25 @@
       </thead>
       <tbody>
         <tr th:each="r : ${reservas}">
-          <td th:text="${r.id}"></td>
+          <td><a th:href="@{|/mis-reservas/${r.id}|}" th:text="${r.id}"></a></td>
           <td th:text="${r.solicitante.nombre}"></td>
           <td th:text="${#temporals.format(r.inicio,'yyyy-MM-dd HH:mm')}"></td>
           <td th:text="${#temporals.format(r.fin,'yyyy-MM-dd HH:mm')}"></td>
           <td th:text="${r.seccion}"></td>
           <td th:text="${r.tipoEvento}"></td>
           <td><span class="badge" th:classappend="${'b-' + r.estado}" th:text="${r.estado}"></span></td>
-          <td th:text="${r.costo}"></td>
+          <td th:text="${r.costo != null ? r.costo : '—'}"></td>
           <td>
-            <form sec:authorize="hasAnyRole('SOLICITANTE','ADMIN_AUDITORIO')"
+            <a class="btn" th:href="@{|/mis-reservas/${r.id}|}">Detalle</a>
+            <form sec:authorize="hasAnyRole('SOLICITANTE','ADMIN_AUDITORIO','ASISTENTE')"
                   th:if="${r.estado.name() == 'PENDIENTE' or r.estado.name() == 'APROBADA'}"
                   th:action="@{|/reservas/${r.id}/cancelar|}" method="post" style="display:inline">
               <button class="btn btn-rojo" type="submit">Cancelar</button>
             </form>
-            <span sec:authorize="hasRole('OPERATIVO')"
-                  style="color:#666;font-style:italic">Solo lectura</span>
           </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(reservas)}">
+          <td colspan="9" style="text-align:center;color:#5c6772;">Sin reservas</td>
         </tr>
       </tbody>
     </table>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8"/>
   <title>Aprobaciones</title>
@@ -14,16 +14,28 @@
       <small>Politécnico Grancolombiano</small>
     </div>
   </div>
-  <nav><a href="/dashboard">Inicio</a></nav>
+  <nav>
+    <a href="/dashboard">Inicio</a>
+    <a href="/mis-reservas">Mis Reservas</a>
+    <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE')" href="/admin/usuarios">Usuarios</a>
+    <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE')" href="/admin/tarifas">Tarifas</a>
+    <form method="post" action="/logout" style="display:inline">
+      <button class="btn btn-amarillo" type="submit">Salir</button>
+    </form>
+  </nav>
 </header>
 <main>
   <div class="card">
     <table>
-      <thead><tr><th>#</th><th>Solicitante</th><th>Inicio</th><th>Fin</th>
-        <th>Sección</th><th>Tipo</th><th>Costo</th><th>Acciones</th></tr></thead>
+      <thead>
+        <tr>
+          <th>#</th><th>Solicitante</th><th>Inicio</th><th>Fin</th>
+          <th>Sección</th><th>Tipo</th><th>Costo</th><th>Acciones</th>
+        </tr>
+      </thead>
       <tbody>
         <tr th:each="r : ${pendientes}">
-          <td th:text="${r.id}"></td>
+          <td><a th:href="@{|/mis-reservas/${r.id}|}" th:text="${r.id}"></a></td>
           <td th:text="${r.solicitante.nombre + ' (' + r.solicitante.rol + ')'}"></td>
           <td th:text="${#temporals.format(r.inicio,'yyyy-MM-dd HH:mm')}"></td>
           <td th:text="${#temporals.format(r.fin,'yyyy-MM-dd HH:mm')}"></td>
@@ -35,12 +47,14 @@
               <button class="btn btn-verde">Aprobar</button>
             </form>
             <form th:action="@{|/admin/rechazar/${r.id}|}" method="post" style="display:inline">
-              <input name="motivo" placeholder="Motivo" style="width:auto;display:inline-block"/>
+              <input name="motivo" placeholder="Motivo" style="width:auto;display:inline-block" required/>
               <button class="btn btn-rojo">Rechazar</button>
             </form>
           </td>
         </tr>
-        <tr th:if="${#lists.isEmpty(pendientes)}"><td colspan="8">Sin pendientes</td></tr>
+        <tr th:if="${#lists.isEmpty(pendientes)}">
+          <td colspan="8" style="text-align:center;color:#5c6772;">Sin reservas pendientes</td>
+        </tr>
       </tbody>
     </table>
   </div>

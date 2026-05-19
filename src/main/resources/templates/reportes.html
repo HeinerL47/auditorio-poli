@@ -110,8 +110,8 @@
       <div>
         <button class="btn" type="submit">Aplicar filtros</button>
         <a class="btn btn-amarillo"
-           th:href="@{/reportes/historial.csv(seccion=${filtroSeccion},periodo=${filtroPeriodo},fechaRef=${filtroFechaRef})}"
-           style="text-decoration:none;margin-left:.4rem;">CSV filtrado</a>
+           th:href="@{/reportes/historial.xlsx(seccion=${filtroSeccion},periodo=${filtroPeriodo},fechaRef=${filtroFechaRef})}"
+           style="text-decoration:none;margin-left:.4rem;">⬇ Excel filtrado</a>
       </div>
     </form>
     <p style="margin:.8rem 0 0;color:#5c6772;font-size:.9rem;">
@@ -190,8 +190,8 @@
   <div class="card">
     <div class="export-bar">
       <h3>Historial completo de reservas</h3>
-      <a href="/reportes/historial.csv" class="btn btn-verde" style="text-decoration:none;">
-        Descargar CSV
+      <a th:href="@{/reportes/historial.xlsx(seccion=${filtroSeccion},periodo=${filtroPeriodo},fechaRef=${filtroFechaRef})}" class="btn btn-verde" style="text-decoration:none;">
+        ⬇ Descargar Excel (.xlsx)
       </a>
     </div>
     <table class="historial-table">

@@ -20,7 +20,7 @@
   </nav>
 </header>
 <main>
-  <div th:if="${ok}" class="ok" th:text="${ok}"></div>
+  <div th:if="${ok}"    class="ok"    th:text="${ok}"></div>
   <div th:if="${error}" class="error" th:text="${error}"></div>
 
   <div class="card">
@@ -30,7 +30,7 @@
         <tr>
           <th>#</th><th>Nombre</th><th>Documento</th><th>Correo</th>
           <th>Teléfono</th><th>Organización</th>
-          <th>Rol</th><th>Tipo</th><th>Activo</th><th>Acciones</th>
+          <th>Rol</th><th>Sub-rol / Tipo</th><th>Activo</th><th>Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -42,9 +42,15 @@
           <td th:text="${u.telefono}"></td>
           <td th:text="${u.organizacion}"></td>
           <td><span class="badge" th:text="${u.rol}"></span></td>
-          <td th:text="${u.tipoSolicitante != null ? u.tipoSolicitante : '-'}"></td>
           <td>
-            <span th:if="${u.activo}" style="color:green;font-weight:bold">SÍ</span>
+            <span th:if="${u.tipoSolicitante != null}" th:text="${u.tipoSolicitante}"></span>
+            <span th:if="${u.tipoOperativo != null}"
+                  th:text="${u.tipoOperativo}"
+                  th:classappend="${u.tipoOperativo.name() == 'ASISTENTE'} ? 'badge' : ''"></span>
+            <span th:if="${u.tipoSolicitante == null and u.tipoOperativo == null}">—</span>
+          </td>
+          <td>
+            <span th:if="${u.activo}"   style="color:green;font-weight:bold">SÍ</span>
             <span th:unless="${u.activo}" style="color:#c00;font-weight:bold">NO</span>
           </td>
           <td>
@@ -68,6 +74,19 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="card" style="background:#f8f9fa;font-size:.9em">
+    <b>Leyenda de roles operativos:</b>
+    <ul style="margin:8px 0 0 16px">
+      <li><b>ASISTENTE</b>: mismos permisos que el Administrador del auditorio</li>
+      <li><b>TECNOLOGIA / AUDIOVISUAL / INFRAESTRUCTURA / OPERACIONES</b>: pueden ingresar y ver reservas</li>
+    </ul>
+    <b>Roles solicitantes:</b>
+    <ul style="margin:8px 0 0 16px">
+      <li><b>DOCENTE / ADMINISTRATIVO</b>: correo @poligran.edu.co, sin costo</li>
+      <li><b>Agente Externo</b>: correo externo, crea su cuenta en /registro, paga por hora</li>
+    </ul>
   </div>
 </main>
 </body>
