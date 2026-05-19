@@ -21,11 +21,16 @@ public class UsuarioService {
         this.repo = repo; this.pe = pe;
     }
 
+    private String normalizarCorreo(String correo) {
+        return correo == null ? null : correo.trim().toLowerCase();
+    }
+
     public Usuario registrarExterno(String nombre, String documento, String correo,
                                     String telefono, String organizacion, String password) {
         if (correo != null && correo.toLowerCase().endsWith("@poligran.edu.co"))
             throw new IllegalArgumentException("El registro publico es solo para personas externas. Si eres docente o administrativo, ingresa con tu correo institucional (la cuenta la crea el admin del auditorio).");
-        if (repo.existsByCorreo(correo)) throw new IllegalArgumentException("Correo ya registrado");
+        correo = normalizarCorreo(correo);
+        if (repo.existsByCorreoIgnoreCase(correo)) throw new IllegalArgumentException("Correo ya registrado");
         if (repo.existsByDocumento(documento)) throw new IllegalArgumentException("Documento ya registrado");
         return repo.save(Usuario.builder()
                 .nombre(nombre).documento(documento).correo(correo)
@@ -51,7 +56,8 @@ public class UsuarioService {
             if (correo != null && correo.toLowerCase().endsWith("@poligran.edu.co"))
                 throw new IllegalArgumentException("Un externo no puede tener correo @poligran.edu.co");
         }
-        if (repo.existsByCorreo(correo)) throw new IllegalArgumentException("Correo ya registrado");
+        correo = normalizarCorreo(correo);
+        if (repo.existsByCorreoIgnoreCase(correo)) throw new IllegalArgumentException("Correo ya registrado");
         if (repo.existsByDocumento(documento)) throw new IllegalArgumentException("Documento ya registrado");
         validarPassword(password);
         return repo.save(Usuario.builder()
@@ -148,6 +154,6 @@ public class UsuarioService {
     }
 
     public Usuario porCorreo(String correo) {
-        return repo.findByCorreo(correo).orElseThrow();
+        return repo.findByCorreoIgnoreCase(correo.trim()).orElseThrow();
     }
 }

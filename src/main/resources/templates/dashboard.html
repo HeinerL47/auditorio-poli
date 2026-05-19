@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta http-equiv="Cache-Control" content="no-store"/>
-  <script src="/js/session-guard-head.js?v=2"></script>
+  <script src="/js/session-guard-head.js?v=3"></script>
   <title>Dashboard - Auditorio Poligran</title>
   <link rel="stylesheet" href="/css/styles.css"/>
 </head>
@@ -25,7 +25,7 @@
     <a sec:authorize="hasRole('ADMIN_AUDITORIO')" href="/admin/bloqueos">Bloqueos</a>
     <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','OPERATIVO')" href="/reportes">Reportes</a>
     <form method="post" action="/logout" style="display:inline"
-          onsubmit="try{sessionStorage.setItem('auditorio_salio','1')}catch(e){}">
+          onsubmit="try{sessionStorage.setItem('auditorio_salio','1');localStorage.setItem('auditorio_logout_ts',String(Date.now()));}catch(e){}">
       <button class="btn btn-amarillo" type="submit">Salir</button>
     </form>
   </nav>
@@ -55,7 +55,7 @@
           <th>Tipo</th>
           <th>Estado</th>
           <th>Costo</th>
-          <th>Motivo rechazo</th>
+          <th>Motivo</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -71,16 +71,28 @@
           <td th:text="${r.costo}"></td>
           <td>
             <span th:if="${r.estado.name() == 'RECHAZADA' and r.motivoRechazo != null}"
-                  th:text="${r.motivoRechazo}" style="color:#cf222e;font-size:.85rem;"></span>
-            <span th:unless="${r.estado.name() == 'RECHAZADA' and r.motivoRechazo != null}">—</span>
+                  th:text="${'Rechazo: ' + r.motivoRechazo}" style="color:#cf222e;font-size:.85rem;"></span>
+            <span th:if="${r.estado.name() == 'CANCELADA' and r.motivoCancelacion != null}"
+                  th:text="${'Cancelacion: ' + r.motivoCancelacion}" style="color:#5c6772;font-size:.85rem;"></span>
+            <span th:unless="${(r.estado.name() == 'RECHAZADA' and r.motivoRechazo != null) or (r.estado.name() == 'CANCELADA' and r.motivoCancelacion != null)}">—</span>
           </td>
           <td>
             <a sec:authorize="hasRole('ADMIN_AUDITORIO')"
                th:if="${r.estado.name() == 'PENDIENTE' or r.estado.name() == 'APROBADA'}"
                class="btn" th:href="@{|/admin/reservas/${r.id}/editar|}">Editar</a>
+            <form sec:authorize="hasRole('ADMIN_AUDITORIO')"
+                  th:if="${r.estado.name() == 'PENDIENTE'}"
+                  th:action="@{|/admin/rechazar/${r.id}|}" method="post" style="display:inline"
+                  onsubmit="var m=this.motivo.value.trim(); if(!m){alert('Indique el motivo del rechazo');return false;} return true;">
+              <input name="motivo" placeholder="Motivo rechazo" required
+                     style="width:130px;display:inline-block;font-size:.85rem;"/>
+              <button class="btn btn-rojo" type="submit">Rechazar</button>
+            </form>
             <form sec:authorize="hasAnyRole('SOLICITANTE','ADMIN_AUDITORIO')"
                   th:if="${r.estado.name() == 'PENDIENTE' or r.estado.name() == 'APROBADA'}"
-                  th:action="@{|/reservas/${r.id}/cancelar|}" method="post" style="display:inline">
+                  th:action="@{|/reservas/${r.id}/cancelar|}" method="post" style="display:inline;margin-top:.25rem;">
+              <input name="motivo" placeholder="Motivo cancelacion"
+                     style="width:130px;display:inline-block;font-size:.85rem;"/>
               <button class="btn btn-rojo" type="submit">Cancelar</button>
             </form>
             <span sec:authorize="hasRole('OPERATIVO')"
@@ -91,6 +103,6 @@
     </table>
   </div>
 </main>
-<script src="/js/session-guard.js?v=2"></script>
+<script src="/js/session-guard.js?v=3"></script>
 </body>
 </html>

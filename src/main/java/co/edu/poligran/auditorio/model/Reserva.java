@@ -44,6 +44,9 @@ public class Reserva {
     @Column(length = 2000)
     private String motivoRechazo;
 
+    @Column(length = 2000)
+    private String motivoCancelacion;
+
     private LocalDateTime creadaEn;
     private LocalDateTime decididaEn;
     private String decididaPor;
@@ -73,6 +76,8 @@ public class Reserva {
     public void setObservaciones(String o) { this.observaciones = o; }
     public String getMotivoRechazo() { return motivoRechazo; }
     public void setMotivoRechazo(String motivoRechazo) { this.motivoRechazo = motivoRechazo; }
+    public String getMotivoCancelacion() { return motivoCancelacion; }
+    public void setMotivoCancelacion(String motivoCancelacion) { this.motivoCancelacion = motivoCancelacion; }
     public LocalDateTime getCreadaEn() { return creadaEn; }
     public void setCreadaEn(LocalDateTime c) { this.creadaEn = c; }
     public LocalDateTime getDecididaEn() { return decididaEn; }

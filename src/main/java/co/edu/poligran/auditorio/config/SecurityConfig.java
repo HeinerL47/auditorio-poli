@@ -37,7 +37,7 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService(UsuarioRepository repo) {
-        return correo -> repo.findByCorreo(correo)
+        return correo -> repo.findByCorreoIgnoreCase(correo.trim())
                 .map(u -> User.withUsername(u.getCorreo())
                         .password(u.getPassword())
                         .roles(u.getRol().name())
@@ -65,7 +65,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-                                           SessionRegistry sessionRegistry,
                                            NoCacheFilter noCacheFilter,
                                            ClearCacheLogoutHandler clearCacheLogoutHandler) throws Exception {
 
@@ -156,10 +155,6 @@ public class SecurityConfig {
 
                 .sessionManagement(session -> session
                         .invalidSessionUrl("/login?expired")
-                        .maximumSessions(1)
-                        .sessionRegistry(sessionRegistry)
-                        .maxSessionsPreventsLogin(false)
-                        .expiredUrl("/login?expired")
                 );
 
         return http.build();

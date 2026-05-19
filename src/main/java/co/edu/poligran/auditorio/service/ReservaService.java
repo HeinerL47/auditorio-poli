@@ -184,7 +184,7 @@ public class ReservaService {
     }
 
     @Transactional
-    public Reserva cancelar(Long id, Usuario solicitante) {
+    public Reserva cancelar(Long id, Usuario solicitante, String motivo) {
         Reserva r = reservas.findById(id).orElseThrow();
         if (!r.getSolicitante().getId().equals(solicitante.getId()) &&
             solicitante.getRol() != Rol.ADMIN_AUDITORIO)
@@ -193,6 +193,9 @@ public class ReservaService {
         if (horas < 4 && solicitante.getRol() != Rol.ADMIN_AUDITORIO)
             throw new IllegalArgumentException("Solo se puede cancelar hasta 4 horas antes");
         r.setEstado(EstadoReserva.CANCELADA);
+        if (motivo != null && !motivo.trim().isEmpty()) {
+            r.setMotivoCancelacion(motivo.trim());
+        }
         notif.notificarCancelacion(r);
         return r;
     }

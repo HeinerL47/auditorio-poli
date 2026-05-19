@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -69,12 +70,16 @@ public class ReservaController {
     }
 
     @PostMapping("/{id}/cancelar")
-    public String cancelar(@PathVariable Long id, @AuthenticationPrincipal UserDetails ud, Model m) {
+    public String cancelar(@PathVariable Long id,
+                           @RequestParam(required = false) String motivo,
+                           @AuthenticationPrincipal UserDetails ud,
+                           RedirectAttributes ra) {
         Usuario u = usuarios.porCorreo(ud.getUsername());
         try {
-            reservas.cancelar(id, u);
+            reservas.cancelar(id, u, motivo);
+            ra.addFlashAttribute("ok", "Reserva cancelada");
         } catch (Exception e) {
-            m.addAttribute("error", e.getMessage());
+            ra.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/dashboard";
     }

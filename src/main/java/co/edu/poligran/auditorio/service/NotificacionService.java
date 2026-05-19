@@ -140,7 +140,13 @@ public class NotificacionService {
 
     public void notificarCancelacion(Reserva r) {
         String asunto = "Reserva #" + r.getId() + " CANCELADA";
-        String mensaje = "La reserva ha sido <b>cancelada</b>.";
+        String mensaje;
+        if (r.getMotivoCancelacion() != null && !r.getMotivoCancelacion().isBlank()) {
+            mensaje = "La reserva ha sido <b>cancelada</b>. Motivo: <b>"
+                    + escape(r.getMotivoCancelacion()) + "</b>.";
+        } else {
+            mensaje = "La reserva ha sido <b>cancelada</b>.";
+        }
         enviarSolicitante(r, asunto, mensaje, "CANCELADA");
         notificarRoles(asunto, "Una reserva ha sido cancelada.", "CANCELADA", r,
                 List.of(Rol.ADMIN_AUDITORIO, Rol.OPERATIVO));
@@ -265,6 +271,9 @@ public class NotificacionService {
 
         if ("RECHAZADA".equals(estadoVisual) && r.getMotivoRechazo() != null && !r.getMotivoRechazo().isBlank()) {
             sb.append(fila("Motivo de rechazo", escape(r.getMotivoRechazo())));
+        }
+        if ("CANCELADA".equals(estadoVisual) && r.getMotivoCancelacion() != null && !r.getMotivoCancelacion().isBlank()) {
+            sb.append(fila("Motivo de cancelacion", escape(r.getMotivoCancelacion())));
         }
 
         sb.append("</table>");

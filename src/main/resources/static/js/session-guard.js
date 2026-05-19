@@ -1,87 +1,67 @@
 /**
- * Proteccion contra bfcache (boton Atras/Adelante del navegador).
+ * Sesion: bloqueo bfcache, sincronizacion entre pestanas al cerrar sesion.
+ * No verifica en cada foco (evita expulsar por multiples pestanas activas).
  */
 (function () {
   'use strict';
 
   var CLAVE_SALIO = 'auditorio_salio';
+  var CLAVE_LOGOUT = 'auditorio_logout_ts';
 
   function irALogin() {
     window.location.replace('/login?expired');
   }
 
-  function marcarSalida() {
-    try {
-      sessionStorage.setItem(CLAVE_SALIO, '1');
-    } catch (e) { /* ignorar */ }
+  function sesionCerradaLocalmente() {
+    return sessionStorage.getItem(CLAVE_SALIO) === '1'
+        || localStorage.getItem(CLAVE_LOGOUT) != null;
   }
 
-  function limpiarSalida() {
+  function limpiarMarcasSalida() {
     try {
       sessionStorage.removeItem(CLAVE_SALIO);
+      localStorage.removeItem(CLAVE_LOGOUT);
     } catch (e) { /* ignorar */ }
   }
 
-  function cerrarSesionEnServidor() {
-    return fetch('/logout', {
-      method: 'POST',
-      credentials: 'same-origin',
-      cache: 'no-store'
-    }).catch(function () { /* ignorar */ });
-  }
-
-  function verificarSesion() {
-    if (sessionStorage.getItem(CLAVE_SALIO) === '1') {
-      cerrarSesionEnServidor().finally(irALogin);
-      return;
+  /* Cerrar sesion en todas las pestanas cuando una hace logout */
+  window.addEventListener('storage', function (e) {
+    if (e.key === CLAVE_LOGOUT && e.newValue) {
+      try { sessionStorage.setItem(CLAVE_SALIO, '1'); } catch (err) {}
+      irALogin();
     }
+  });
 
-    fetch('/api/session', {
-      method: 'GET',
-      credentials: 'same-origin',
-      cache: 'no-store',
-      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }
-    })
-      .then(function (r) {
-        if (!r.ok) {
-          marcarSalida();
-          irALogin();
-          return null;
-        }
-        return r.json();
-      })
-      .then(function (data) {
-        if (!data || data.authenticated !== true) {
-          marcarSalida();
-          irALogin();
-          return;
-        }
-        limpiarSalida();
-      })
-      .catch(function () {
-        marcarSalida();
-        irALogin();
-      });
+  if (sesionCerradaLocalmente()) {
+    irALogin();
+    return;
   }
 
-  /* Desactiva bfcache en Chrome/Edge/Firefox */
+  /* Impide bfcache en la mayoria de navegadores */
   window.addEventListener('unload', function () {});
 
   window.addEventListener('pageshow', function (e) {
-    if (e.persisted) {
-      if (sessionStorage.getItem(CLAVE_SALIO) === '1') {
-        irALogin();
-        return;
-      }
-      window.location.reload();
+    if (sesionCerradaLocalmente()) {
+      irALogin();
       return;
     }
-    verificarSesion();
+    if (e.persisted) {
+      window.location.reload();
+    }
   });
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', verificarSesion);
-  } else {
-    verificarSesion();
-  }
+  /* Tras carga normal, quitar marcas si el servidor acepta la sesion */
+  fetch('/api/session', {
+    method: 'GET',
+    credentials: 'same-origin',
+    cache: 'no-store',
+    headers: { Accept: 'application/json' }
+  })
+    .then(function (r) {
+      if (r.ok) {
+        limpiarMarcasSalida();
+      }
+    })
+    .catch(function () { /* ignorar en paginas publicas */ });
+
 })();

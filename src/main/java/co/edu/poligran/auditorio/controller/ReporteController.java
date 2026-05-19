@@ -70,12 +70,12 @@ public class ReporteController {
         PrintWriter w = resp.getWriter();
         w.print('\uFEFF');
         w.println("ID,Solicitante,Documento,Correo,Rol,Tipo Solicitante,Seccion," +
-                  "Fecha Inicio,Fecha Fin,Duracion (h),Tipo Evento,Estado,Costo (COP),Motivo Rechazo,Observaciones");
+                  "Fecha Inicio,Fecha Fin,Duracion (h),Tipo Evento,Estado,Costo (COP),Motivo Rechazo,Motivo Cancelacion,Observaciones");
 
         for (Reserva r : reportes.historial(filtro)) {
             long mins = ChronoUnit.MINUTES.between(r.getInicio(), r.getFin());
             double horas = Math.round(mins / 60.0 * 100) / 100.0;
-            w.printf("%d,%s,%s,%s,%s,%s,%s,%s,%s,%.2f,%s,%s,%s,%s,%s%n",
+            w.printf("%d,%s,%s,%s,%s,%s,%s,%s,%s,%.2f,%s,%s,%s,%s,%s,%s%n",
                 r.getId(),
                 q(r.getSolicitante().getNombre()),
                 q(r.getSolicitante().getDocumento()),
@@ -91,6 +91,7 @@ public class ReporteController {
                 r.getEstado(),
                 r.getCosto() != null ? r.getCosto().toPlainString() : "0",
                 q(r.getMotivoRechazo()),
+                q(r.getMotivoCancelacion()),
                 q(r.getObservaciones()));
         }
         w.flush();
