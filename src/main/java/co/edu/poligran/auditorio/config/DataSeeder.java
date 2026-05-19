@@ -10,6 +10,11 @@ import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
+/**
+ * Siembra los usuarios de prueba verificando cada correo individualmente.
+ * De esta forma, si ya hay otros usuarios en la BD, los usuarios nuevos
+ * (asistente, tecnología, etc.) se crean igualmente si no existen aún.
+ */
 @Component
 public class DataSeeder implements CommandLineRunner {
 
@@ -24,32 +29,46 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (usuarios.count() == 0) {
-            // ── Administrador ──────────────────────────────────────────────
-            crear("Admin Auditorio",     "1000000001", "admin@poligran.edu.co",
-                  "admin123",    Rol.ADMIN_AUDITORIO, null, null);
+        // ── Administrador ──────────────────────────────────────────────────
+        seedIfAbsent("admin@poligran.edu.co",
+                "Admin Auditorio", "1000000001", "admin123",
+                Rol.ADMIN_AUDITORIO, null, null);
 
-            // ── Roles Operativos ───────────────────────────────────────────
-            crear("Asistente Demo",      "1000000010", "asistente@poligran.edu.co",
-                  "asistente123", Rol.OPERATIVO, null, TipoOperativo.ASISTENTE);
-            crear("Tecnologia Demo",     "1000000011", "tecnologia@poligran.edu.co",
-                  "tec123",       Rol.OPERATIVO, null, TipoOperativo.TECNOLOGIA);
-            crear("Audiovisual Demo",    "1000000012", "audiovisual@poligran.edu.co",
-                  "av123",        Rol.OPERATIVO, null, TipoOperativo.AUDIOVISUAL);
-            crear("Infraestructura Demo","1000000013", "infraestructura@poligran.edu.co",
-                  "infra123",     Rol.OPERATIVO, null, TipoOperativo.INFRAESTRUCTURA);
-            crear("Operaciones Demo",    "1000000014", "operaciones@poligran.edu.co",
-                  "ops123",       Rol.OPERATIVO, null, TipoOperativo.OPERACIONES);
+        // ── Roles Operativos ───────────────────────────────────────────────
+        seedIfAbsent("asistente@poligran.edu.co",
+                "Asistente Demo", "1000000010", "asistente123",
+                Rol.OPERATIVO, null, TipoOperativo.ASISTENTE);
 
-            // ── Solicitantes ───────────────────────────────────────────────
-            crear("Docente Demo",        "1000000003", "docente@poligran.edu.co",
-                  "docente123",   Rol.SOLICITANTE, TipoSolicitante.DOCENTE, null);
-            crear("Administrativo Demo", "1000000004", "admin.staff@poligran.edu.co",
-                  "staff123",     Rol.SOLICITANTE, TipoSolicitante.ADMINISTRATIVO, null);
-            crear("Agente Externo Demo", "1000000005", "externo@empresa.com",
-                  "externo123",   Rol.SOLICITANTE, TipoSolicitante.EXTERNO, null);
-        }
+        seedIfAbsent("tecnologia@poligran.edu.co",
+                "Tecnologia Demo", "1000000011", "tec123",
+                Rol.OPERATIVO, null, TipoOperativo.TECNOLOGIA);
 
+        seedIfAbsent("audiovisual@poligran.edu.co",
+                "Audiovisual Demo", "1000000012", "av123",
+                Rol.OPERATIVO, null, TipoOperativo.AUDIOVISUAL);
+
+        seedIfAbsent("infraestructura@poligran.edu.co",
+                "Infraestructura Demo", "1000000013", "infra123",
+                Rol.OPERATIVO, null, TipoOperativo.INFRAESTRUCTURA);
+
+        seedIfAbsent("operaciones@poligran.edu.co",
+                "Operaciones Demo", "1000000014", "ops123",
+                Rol.OPERATIVO, null, TipoOperativo.OPERACIONES);
+
+        // ── Solicitantes ───────────────────────────────────────────────────
+        seedIfAbsent("docente@poligran.edu.co",
+                "Docente Demo", "1000000003", "docente123",
+                Rol.SOLICITANTE, TipoSolicitante.DOCENTE, null);
+
+        seedIfAbsent("admin.staff@poligran.edu.co",
+                "Administrativo Demo", "1000000004", "staff123",
+                Rol.SOLICITANTE, TipoSolicitante.ADMINISTRATIVO, null);
+
+        seedIfAbsent("externo@empresa.com",
+                "Agente Externo Demo", "1000000005", "externo123",
+                Rol.SOLICITANTE, TipoSolicitante.EXTERNO, null);
+
+        // ── Tarifas (solo si no existen) ───────────────────────────────────
         if (tarifas.count() == 0) {
             tarifas.save(Tarifa.builder().seccion(Seccion.B1).valorHora(new BigDecimal("80000")).build());
             tarifas.save(Tarifa.builder().seccion(Seccion.B2).valorHora(new BigDecimal("80000")).build());
@@ -57,6 +76,7 @@ public class DataSeeder implements CommandLineRunner {
             tarifas.save(Tarifa.builder().seccion(Seccion.COMPLETO).valorHora(new BigDecimal("280000")).build());
         }
 
+        // ── Bloqueos recurrentes (solo si no existen) ──────────────────────
         if (bloqueos.count() == 0) {
             bloqueos.save(Bloqueo.builder().motivo("Clase de Bienestar Universitario")
                     .seccion(Seccion.B3).diaSemana(DayOfWeek.MONDAY)
@@ -70,12 +90,23 @@ public class DataSeeder implements CommandLineRunner {
         }
     }
 
-    private void crear(String nombre, String doc, String correo, String pass,
-                       Rol rol, TipoSolicitante tipoSol, TipoOperativo tipoOp) {
-        usuarios.save(Usuario.builder()
-                .nombre(nombre).documento(doc).correo(correo)
-                .password(pe.encode(pass)).rol(rol)
-                .tipoSolicitante(tipoSol).tipoOperativo(tipoOp)
-                .activo(true).build());
+    /**
+     * Crea el usuario solo si su correo aún no existe en la base de datos.
+     * Así funciona aunque ya haya otros usuarios registrados.
+     */
+    private void seedIfAbsent(String correo, String nombre, String doc, String pass,
+                               Rol rol, TipoSolicitante tipoSol, TipoOperativo tipoOp) {
+        if (!usuarios.existsByCorreoIgnoreCase(correo)) {
+            // Si el documento ya existe (migraciones previas), usar uno único
+            String docFinal = doc;
+            if (usuarios.existsByDocumento(doc)) {
+                docFinal = doc + "_seed";
+            }
+            usuarios.save(Usuario.builder()
+                    .nombre(nombre).documento(docFinal).correo(correo)
+                    .password(pe.encode(pass)).rol(rol)
+                    .tipoSolicitante(tipoSol).tipoOperativo(tipoOp)
+                    .activo(true).build());
+        }
     }
 }

@@ -1,7 +1,7 @@
 package co.edu.poligran.auditorio.config;
 
-import co.edu.poligran.auditorio.model.TipoOperativo;
 import co.edu.poligran.auditorio.model.Rol;
+import co.edu.poligran.auditorio.model.TipoOperativo;
 import co.edu.poligran.auditorio.repository.UsuarioRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +9,6 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,27 +27,43 @@ public class SecurityConfig {
     }
 
     /**
-     * Construye las authorities del usuario.
-     * - Todos los roles obtienen ROLE_<ROL>.
-     * - Si el usuario es OPERATIVO con tipoOperativo = ASISTENTE,
-     *   se agrega también ROLE_ASISTENTE para que tenga los mismos
-     *   permisos que ADMIN_AUDITORIO en todas las rutas de seguridad.
+     * Carga el usuario por correo (case-insensitive) y construye sus authorities.
+     *
+     * Authorities asignadas:
+     *   - ROLE_<ROL>  para todos (ej: ROLE_OPERATIVO, ROLE_ADMIN_AUDITORIO, ROLE_SOLICITANTE)
+     *   - ROLE_<TIPO_OPERATIVO>  adicionalmente cuando el usuario es OPERATIVO
+     *     (ej: ROLE_ASISTENTE, ROLE_TECNOLOGIA, ROLE_AUDIOVISUAL, etc.)
+     *
+     * Esto permite que en SecurityConfig se use hasAnyRole("ADMIN_AUDITORIO","ASISTENTE")
+     * y el ASISTENTE tenga exactamente los mismos permisos que el administrador.
      */
     @Bean
     public UserDetailsService userDetailsService(UsuarioRepository repo) {
-        return correo -> repo.findByCorreo(correo)
-                .map(u -> {
-                    List<GrantedAuthority> auths = new ArrayList<>();
-                    auths.add(new SimpleGrantedAuthority("ROLE_" + u.getRol().name()));
-                    if (u.getRol() == Rol.OPERATIVO && u.getTipoOperativo() != null) {
-                        // Sub-rol operativo como authority adicional
-                        auths.add(new SimpleGrantedAuthority("ROLE_" + u.getTipoOperativo().name()));
-                    }
-                    return new org.springframework.security.core.userdetails.User(
-                            u.getCorreo(), u.getPassword(),
-                            u.isActivo(), true, true, true, auths);
-                })
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + correo));
+        return correo -> {
+            // Case-insensitive para evitar problemas con mayúsculas al escribir el correo
+            var usuario = repo.findByCorreoIgnoreCase(correo.trim())
+                    .orElseThrow(() -> new UsernameNotFoundException(
+                            "Usuario no encontrado: " + correo));
+
+            List<GrantedAuthority> auths = new ArrayList<>();
+            // Authority base por rol principal
+            auths.add(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name()));
+
+            // Si es OPERATIVO, agregar también el sub-rol como authority
+            if (usuario.getRol() == Rol.OPERATIVO && usuario.getTipoOperativo() != null) {
+                auths.add(new SimpleGrantedAuthority("ROLE_" + usuario.getTipoOperativo().name()));
+            }
+
+            return new org.springframework.security.core.userdetails.User(
+                    usuario.getCorreo(),
+                    usuario.getPassword(),
+                    usuario.isActivo(),   // enabled
+                    true,                 // accountNonExpired
+                    true,                 // credentialsNonExpired
+                    true,                 // accountNonLocked
+                    auths
+            );
+        };
     }
 
     @Bean
@@ -78,7 +93,7 @@ public class SecurityConfig {
                 // Cancelar: solicitante dueño + admin + asistente
                 .requestMatchers("/reservas/*/cancelar")
                     .hasAnyRole("SOLICITANTE", "ADMIN_AUDITORIO", "ASISTENTE")
-                // Observaciones: todos los roles (post-evento)
+                // Observaciones: todos los autenticados
                 .requestMatchers("/reservas/*/observacion").authenticated()
                 // Reportes: admin, asistente y todos los operativos
                 .requestMatchers("/reportes/**")
