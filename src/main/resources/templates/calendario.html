@@ -2,6 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
+  <meta http-equiv="Cache-Control" content="no-store"/>
+  <script src="/js/session-guard-head.js?v=2"></script>
   <title>Calendario - Auditorio</title>
   <link rel="stylesheet" href="/css/styles.css"/>
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet"/>
@@ -83,6 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnRefrescar').addEventListener('click', () => cal.refetchEvents());
 });
 </script>
-<script src="/js/session-guard.js"></script>
+<script src="/js/session-guard.js?v=2"></script>
 </body>
 </html>

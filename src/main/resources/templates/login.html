@@ -31,7 +31,7 @@
     </div>
     <div th:if="${param.registered}" class="ok">Registro exitoso, ya puedes iniciar sesion</div>
 
-    <form method="post" action="/login" autocomplete="off">
+    <form method="post" action="/login" id="formLogin" autocomplete="off">
       <label for="correo">Correo</label>
       <input type="email" id="correo" name="correo" required autofocus/>
       <label for="password">Contrasena</label>
@@ -50,9 +50,46 @@
   &copy; Politecnico Grancolombiano - <span>Somos diferentes, Somos Poli.</span>
 </footer>
 <script>
-if (window.history && window.history.replaceState) {
-  window.history.replaceState(null, '', window.location.pathname + window.location.search);
-}
+(function () {
+  var CLAVE = 'auditorio_salio';
+
+  function esAtrasAdelante() {
+    var nav = performance.getEntriesByType && performance.getEntriesByType('navigation');
+    if (nav && nav.length && nav[0].type === 'back_forward') return true;
+    return performance.navigation && performance.navigation.type === 2;
+  }
+
+  function marcarSalida() {
+    try { sessionStorage.setItem(CLAVE, '1'); } catch (e) {}
+  }
+
+  function limpiarSalida() {
+    try { sessionStorage.removeItem(CLAVE); } catch (e) {}
+  }
+
+  if (location.search.indexOf('logout') >= 0 || location.search.indexOf('expired') >= 0) {
+    marcarSalida();
+  }
+
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted || esAtrasAdelante()) {
+      marcarSalida();
+    }
+  });
+
+  var form = document.getElementById('formLogin');
+  if (form) {
+    form.addEventListener('submit', function () {
+      limpiarSalida();
+    });
+  }
+
+  window.addEventListener('unload', function () {});
+
+  if (window.history && window.history.replaceState) {
+    window.history.replaceState(null, '', location.pathname + location.search);
+  }
+})();
 </script>
 </body>
 </html>

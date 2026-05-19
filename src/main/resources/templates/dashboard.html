@@ -2,6 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8"/>
+  <meta http-equiv="Cache-Control" content="no-store"/>
+  <script src="/js/session-guard-head.js?v=2"></script>
   <title>Dashboard - Auditorio Poligran</title>
   <link rel="stylesheet" href="/css/styles.css"/>
 </head>
@@ -22,7 +24,8 @@
     <a sec:authorize="hasRole('ADMIN_AUDITORIO')" href="/admin/tarifas">Tarifas</a>
     <a sec:authorize="hasRole('ADMIN_AUDITORIO')" href="/admin/bloqueos">Bloqueos</a>
     <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','OPERATIVO')" href="/reportes">Reportes</a>
-    <form method="post" action="/logout" style="display:inline">
+    <form method="post" action="/logout" style="display:inline"
+          onsubmit="try{sessionStorage.setItem('auditorio_salio','1')}catch(e){}">
       <button class="btn btn-amarillo" type="submit">Salir</button>
     </form>
   </nav>
@@ -88,6 +91,6 @@
     </table>
   </div>
 </main>
-<script src="/js/session-guard.js"></script>
+<script src="/js/session-guard.js?v=2"></script>
 </body>
 </html>

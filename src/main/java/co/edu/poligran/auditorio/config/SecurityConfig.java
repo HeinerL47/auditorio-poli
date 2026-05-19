@@ -66,7 +66,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            SessionRegistry sessionRegistry,
-                                           NoCacheFilter noCacheFilter) throws Exception {
+                                           NoCacheFilter noCacheFilter,
+                                           ClearCacheLogoutHandler clearCacheLogoutHandler) throws Exception {
 
         HeaderWriterLogoutHandler cacheLogout = new HeaderWriterLogoutHandler(
                 new CacheControlHeadersWriter());
@@ -148,6 +149,7 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID", "SESSION", "remember-me")
+                        .addLogoutHandler(clearCacheLogoutHandler)
                         .addLogoutHandler(cacheLogout)
                         .permitAll()
                 )

@@ -1,52 +1,87 @@
 /**
- * Impide ver paginas protegidas con boton "Adelante" sin sesion activa (bfcache del navegador).
+ * Proteccion contra bfcache (boton Atras/Adelante del navegador).
  */
 (function () {
   'use strict';
+
+  var CLAVE_SALIO = 'auditorio_salio';
 
   function irALogin() {
     window.location.replace('/login?expired');
   }
 
+  function marcarSalida() {
+    try {
+      sessionStorage.setItem(CLAVE_SALIO, '1');
+    } catch (e) { /* ignorar */ }
+  }
+
+  function limpiarSalida() {
+    try {
+      sessionStorage.removeItem(CLAVE_SALIO);
+    } catch (e) { /* ignorar */ }
+  }
+
+  function cerrarSesionEnServidor() {
+    return fetch('/logout', {
+      method: 'POST',
+      credentials: 'same-origin',
+      cache: 'no-store'
+    }).catch(function () { /* ignorar */ });
+  }
+
   function verificarSesion() {
-    return fetch('/api/session', {
+    if (sessionStorage.getItem(CLAVE_SALIO) === '1') {
+      cerrarSesionEnServidor().finally(irALogin);
+      return;
+    }
+
+    fetch('/api/session', {
       method: 'GET',
       credentials: 'same-origin',
       cache: 'no-store',
-      headers: { Accept: 'application/json' }
+      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }
     })
       .then(function (r) {
         if (!r.ok) {
+          marcarSalida();
           irALogin();
           return null;
         }
         return r.json();
       })
       .then(function (data) {
-        if (data && data.authenticated === false) {
+        if (!data || data.authenticated !== true) {
+          marcarSalida();
           irALogin();
+          return;
         }
+        limpiarSalida();
       })
-      .catch(irALogin);
+      .catch(function () {
+        marcarSalida();
+        irALogin();
+      });
   }
 
-  function esNavegacionAtrasAdelante() {
-    var entries = window.performance && performance.getEntriesByType
-        ? performance.getEntriesByType('navigation') : [];
-    if (entries.length > 0 && entries[0].type === 'back_forward') {
-      return true;
-    }
-    return window.performance && performance.navigation
-        && performance.navigation.type === 2;
-  }
+  /* Desactiva bfcache en Chrome/Edge/Firefox */
+  window.addEventListener('unload', function () {});
 
   window.addEventListener('pageshow', function (e) {
-    if (e.persisted || esNavegacionAtrasAdelante()) {
-      verificarSesion();
+    if (e.persisted) {
+      if (sessionStorage.getItem(CLAVE_SALIO) === '1') {
+        irALogin();
+        return;
+      }
+      window.location.reload();
+      return;
     }
+    verificarSesion();
   });
 
-  if (esNavegacionAtrasAdelante()) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', verificarSesion);
+  } else {
     verificarSesion();
   }
 })();

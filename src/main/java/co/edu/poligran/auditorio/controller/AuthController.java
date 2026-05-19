@@ -1,6 +1,9 @@
 package co.edu.poligran.auditorio.controller;
 
 import co.edu.poligran.auditorio.service.UsuarioService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +17,14 @@ public class AuthController {
     public String home() { return "redirect:/dashboard"; }
 
     @GetMapping("/login")
-    public String login() { return "login"; }
+    public String login(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        SecurityContextHolder.clearContext();
+        return "login";
+    }
 
     @GetMapping("/registro")
     public String registroForm() { return "registro"; }
