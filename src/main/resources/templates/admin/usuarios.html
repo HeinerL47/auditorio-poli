@@ -2,22 +2,20 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
-  <meta http-equiv="Cache-Control" content="no-store"/>
-  <script src="/js/session-guard-head.js?v=3"></script>
-  <title>Usuarios - Auditorio Poligran</title>
+  <title>Usuarios - Auditorio Poligrán</title>
   <link rel="stylesheet" href="/css/styles.css"/>
 </head>
 <body>
 <header>
   <div class="brand">
-    <img src="/images/poli-logo.jpg" alt="Politecnico Grancolombiano"/>
+    <img src="/images/poli-logo.jpg" alt="Politécnico Grancolombiano"/>
     <div>
-      <h1>Gestion de usuarios</h1>
-      <small>Politecnico Grancolombiano</small>
+      <h1>Gestión de usuarios</h1>
+      <small>Politécnico Grancolombiano</small>
     </div>
   </div>
   <nav>
-    <a href="/dashboard">Volver</a>
+    <a href="/dashboard">Inicio</a>
     <a href="/admin/usuarios/nuevo">+ Nuevo usuario</a>
   </nav>
 </header>
@@ -31,7 +29,7 @@
       <thead>
         <tr>
           <th>#</th><th>Nombre</th><th>Documento</th><th>Correo</th>
-          <th>Telefono</th><th>Organizacion</th>
+          <th>Teléfono</th><th>Organización</th>
           <th>Rol</th><th>Tipo</th><th>Activo</th><th>Acciones</th>
         </tr>
       </thead>
@@ -46,25 +44,23 @@
           <td><span class="badge" th:text="${u.rol}"></span></td>
           <td th:text="${u.tipoSolicitante != null ? u.tipoSolicitante : '-'}"></td>
           <td>
-            <span th:if="${u.activo}" style="color:green;font-weight:bold">SI</span>
+            <span th:if="${u.activo}" style="color:green;font-weight:bold">SÍ</span>
             <span th:unless="${u.activo}" style="color:#c00;font-weight:bold">NO</span>
           </td>
           <td>
             <a class="btn" th:href="@{|/admin/usuarios/${u.id}/editar|}">Editar</a>
+
             <form th:action="@{|/admin/usuarios/${u.id}/estado|}" method="post" style="display:inline">
               <input type="hidden" name="activo" th:value="${!u.activo}"/>
               <button class="btn" th:classappend="${u.activo} ? 'btn-amarillo' : ''"
                       th:text="${u.activo} ? 'Desactivar' : 'Activar'"></button>
             </form>
-            <details style="display:inline-block;margin-left:.3rem;">
-              <summary class="btn" style="cursor:pointer;list-style:none;">Resetear clave</summary>
-              <form th:action="@{|/admin/usuarios/${u.id}/password|}" method="post"
-                    style="margin-top:.5rem;padding:.6rem;background:#f4f6f9;border-radius:6px;">
-                <input type="password" name="nuevaPassword" minlength="6" required
-                       placeholder="Minimo 6 caracteres" style="width:180px;display:inline-block;"/>
-                <button class="btn btn-verde" type="submit">Guardar</button>
-              </form>
-            </details>
+
+            <form th:action="@{|/admin/usuarios/${u.id}/password|}" method="post" style="display:inline"
+                  onsubmit="var p=prompt('Nueva contraseña (mínimo 6 caracteres):'); if(!p||p.length&lt;6){return false;} this.nuevaPassword.value=p;">
+              <input type="hidden" name="nuevaPassword" value=""/>
+              <button class="btn">Restablecer clave</button>
+            </form>
           </td>
         </tr>
         <tr th:if="${#lists.isEmpty(usuarios)}">
@@ -74,6 +70,5 @@
     </table>
   </div>
 </main>
-<script src="/js/session-guard.js?v=3"></script>
 </body>
 </html>

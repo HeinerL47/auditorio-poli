@@ -2,18 +2,16 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
-  <meta http-equiv="Cache-Control" content="no-store"/>
-  <script src="/js/session-guard-head.js?v=3"></script>
-  <title>Usuario - Auditorio Poligran</title>
+  <title>Usuario - Auditorio Poligrán</title>
   <link rel="stylesheet" href="/css/styles.css"/>
 </head>
 <body>
 <header>
   <div class="brand">
-    <img src="/images/poli-logo.jpg" alt="Politecnico Grancolombiano"/>
+    <img src="/images/poli-logo.jpg" alt="Politécnico Grancolombiano"/>
     <div>
       <h1 th:text="${modo == 'crear'} ? 'Crear usuario' : 'Editar usuario'"></h1>
-      <small>Politecnico Grancolombiano</small>
+      <small>Politécnico Grancolombiano</small>
     </div>
   </div>
   <nav><a href="/admin/usuarios">Volver a la lista</a></nav>
@@ -40,15 +38,15 @@
         Externos: cualquier otro dominio
       </small>
 
-      <label>Telefono</label>
+      <label>Teléfono</label>
       <input type="text" name="telefono" th:value="${usuario.telefono}"/>
 
-      <label>Organizacion / Dependencia</label>
+      <label>Organización / Dependencia</label>
       <input type="text" name="organizacion" th:value="${usuario.organizacion}"/>
 
-      <label th:if="${modo == 'crear'}">Contrasena inicial *</label>
+      <label th:if="${modo == 'crear'}">Contraseña inicial *</label>
       <input th:if="${modo == 'crear'}" type="password" name="password" minlength="6" required/>
-      <small th:if="${modo == 'crear'}" style="color:#666">Minimo 6 caracteres. El usuario podra cambiarla luego.</small>
+      <small th:if="${modo == 'crear'}" style="color:#666">Mínimo 6 caracteres. El usuario podrá cambiarla luego.</small>
 
       <label>Rol *</label>
       <select name="rol" id="rol" required onchange="toggleTipo()">
@@ -65,8 +63,8 @@
       </select>
       <small style="color:#666">
         Solo aplica si el rol es SOLICITANTE.<br/>
-        DOCENTE / ADMINISTRATIVO: usuarios internos del Politecnico (sin costo).<br/>
-        EXTERNO: persona u organizacion ajena al Politecnico (paga por hora).
+        DOCENTE / ADMINISTRATIVO: usuarios internos del Politécnico (sin costo).<br/>
+        EXTERNO: persona u organización ajena al Politécnico (paga por hora).
       </small>
 
       <br/><br/>
@@ -88,6 +86,5 @@
   }
   toggleTipo();
 </script>
-<script src="/js/session-guard.js?v=3"></script>
 </body>
 </html>

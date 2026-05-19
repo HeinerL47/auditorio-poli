@@ -3,6 +3,7 @@ package co.edu.poligran.auditorio.controller;
 import co.edu.poligran.auditorio.service.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,12 +18,15 @@ public class AuthController {
     public String home() { return "redirect:/dashboard"; }
 
     @GetMapping("/login")
-    public String login(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
+    public String login(HttpServletRequest request, Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.invalidate();
+            }
+            SecurityContextHolder.clearContext();
+            return "redirect:/login?expirada";
         }
-        SecurityContextHolder.clearContext();
         return "login";
     }
 

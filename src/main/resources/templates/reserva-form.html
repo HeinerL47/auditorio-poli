@@ -2,18 +2,16 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
-  <meta http-equiv="Cache-Control" content="no-store"/>
-  <script src="/js/session-guard-head.js?v=3"></script>
   <title>Nueva reserva</title>
   <link rel="stylesheet" href="/css/styles.css"/>
 </head>
 <body>
 <header>
   <div class="brand">
-    <img src="/images/poli-logo.jpg" alt="Politecnico Grancolombiano"/>
+    <img src="/images/poli-logo.jpg" alt="Politécnico Grancolombiano"/>
     <div>
       <h1>Nueva reserva</h1>
-      <small>Politecnico Grancolombiano</small>
+      <small>Politécnico Grancolombiano</small>
     </div>
   </div>
   <nav><a href="/dashboard">Volver</a></nav>
@@ -21,57 +19,36 @@
 <main>
   <div class="card">
     <div th:if="${error}" class="error" th:text="${error}"></div>
-    <form method="post" action="/reservas/nueva" id="formReserva" onsubmit="return validarFormulario()">
+    <form method="post" action="/reservas/nueva">
       <div class="grid-2">
         <div>
           <label>Inicio</label>
           <input type="datetime-local" name="inicio" id="inicio" th:value="${inicio}" required/>
         </div>
         <div>
-          <label>Fin (min 1h, max 4h)</label>
+          <label>Fin (máx. 4h)</label>
           <input type="datetime-local" name="fin" id="fin" th:value="${fin}" required/>
         </div>
       </div>
-      <label>Seccion</label>
+      <label>Sección</label>
       <select name="seccion" id="seccion" required>
         <option th:each="s : ${secciones}" th:value="${s}" th:text="${s + ' (' + s.capacidad + ' personas)'}"></option>
       </select>
       <label>Tipo de evento</label>
       <input name="tipoEvento" th:value="${tipoEvento}" required/>
-      <label>Especificaciones / extras</label>
+      <label>Especificaciones / extras (sillas, mesas, micrófonos, video, etc.)</label>
       <textarea name="especificaciones" rows="4" th:text="${especificaciones}"></textarea>
       <div class="card" style="background:#fffbe6">
-        <b>Cotizacion (solo externos):</b>
+        <b>Cotización (solo externos):</b>
         <span id="cotizacion">--</span>
         <button class="btn btn-amarillo" type="button" onclick="cotizar()">Cotizar</button>
       </div>
       <button class="btn" type="submit">Crear reserva</button>
     </form>
-    <p><b>Reglas:</b> 8:00-21:00, duracion minima 1 hora, maxima 4 horas, minimo 1 semana de anticipacion, maximo 1 mes.</p>
+    <p><b>Reglas:</b> 8:00–21:00, máximo 4 horas, mínimo 1 semana de anticipación, máximo 1 mes.</p>
   </div>
 </main>
 <script>
-const MIN_MINUTOS = 60;
-const MAX_MINUTOS = 240;
-
-function validarFormulario() {
-  const inicio = document.getElementById('inicio').value;
-  const fin = document.getElementById('fin').value;
-  if (!inicio || !fin) return true;
-  const d1 = new Date(inicio);
-  const d2 = new Date(fin);
-  const mins = (d2 - d1) / 60000;
-  if (mins < MIN_MINUTOS) {
-    alert('La duracion minima es de 1 hora.');
-    return false;
-  }
-  if (mins > MAX_MINUTOS) {
-    alert('La duracion maxima es de 4 horas.');
-    return false;
-  }
-  return true;
-}
-
 async function cotizar() {
   const fd = new FormData();
   fd.append('seccion', document.getElementById('seccion').value);
@@ -79,9 +56,7 @@ async function cotizar() {
   fd.append('fin', document.getElementById('fin').value);
   const r = await fetch('/reservas/cotizar', { method: 'POST', body: fd });
   if (r.ok) { const d = await r.json(); document.getElementById('cotizacion').textContent = '$ ' + d.costo; }
-  else { document.getElementById('cotizacion').textContent = 'Revise fechas y duracion'; }
 }
 </script>
-<script src="/js/session-guard.js?v=3"></script>
 </body>
 </html>

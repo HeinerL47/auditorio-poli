@@ -2,59 +2,57 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
-  <meta http-equiv="Cache-Control" content="no-store"/>
-  <script src="/js/session-guard-head.js?v=3"></script>
   <title>Bloqueos</title>
   <link rel="stylesheet" href="/css/styles.css"/>
 </head>
 <body>
 <header>
   <div class="brand">
-    <img src="/images/poli-logo.jpg" alt="Politecnico Grancolombiano"/>
+    <img src="/images/poli-logo.jpg" alt="Politécnico Grancolombiano"/>
     <div>
-      <h1>Gestion de Bloqueos</h1>
-      <small>Politecnico Grancolombiano</small>
+      <h1>Gestión de bloqueos</h1>
+      <small>Politécnico Grancolombiano</small>
     </div>
   </div>
-  <nav><a href="/dashboard">Volver</a></nav>
+  <nav><a href="/dashboard">Inicio</a></nav>
 </header>
 <main>
 
   <div class="card">
-    <h3>Bloqueo recurrente (por dia de semana)</h3>
+    <h3>Bloqueo recurrente (por día de semana)</h3>
     <p style="color:#5c6772;font-size:.92rem;margin-bottom:1rem;">
       Ideal para horarios fijos como clases de bienestar que se repiten cada semana.
     </p>
     <form method="post" action="/admin/bloqueos" class="grid-2">
       <div><label>Motivo</label><input name="motivo" required placeholder="Ej: Clase de bienestar"/></div>
       <div>
-        <label>Seccion (opcional)</label>
+        <label>Sección (opcional)</label>
         <select name="seccion">
           <option value="">Todas</option>
           <option th:each="s : ${secciones}" th:value="${s}" th:text="${s}"></option>
         </select>
       </div>
       <div>
-        <label>Dia de la semana</label>
+        <label>Día de la semana</label>
         <select name="diaSemana">
           <option th:each="d : ${dias}" th:value="${d}" th:text="${d}"></option>
         </select>
       </div>
-      <div><label>Hora inicio</label><input type="time" name="horaInicio" required/></div>
-      <div><label>Hora fin</label><input type="time" name="horaFin" required/></div>
+      <div><label>Hora de inicio</label><input type="time" name="horaInicio" required/></div>
+      <div><label>Hora de fin</label><input type="time" name="horaFin" required/></div>
       <div style="align-self:end"><button class="btn">Agregar bloqueo recurrente</button></div>
     </form>
   </div>
 
   <div class="card">
-    <h3>Bloqueo por fecha especifica</h3>
+    <h3>Bloqueo por fecha específica</h3>
     <p style="color:#5c6772;font-size:.92rem;margin-bottom:1rem;">
       Para eventos institucionales, festivos o cierres puntuales en una fecha determinada.
     </p>
     <form method="post" action="/admin/bloqueos/fecha" class="grid-2">
       <div><label>Motivo</label><input name="motivo" required placeholder="Ej: Evento institucional / Festivo"/></div>
       <div>
-        <label>Seccion (opcional)</label>
+        <label>Sección (opcional)</label>
         <select name="seccion">
           <option value="">Todas</option>
           <option th:each="s : ${secciones}" th:value="${s}" th:text="${s}"></option>
@@ -75,8 +73,8 @@
         <tr>
           <th>Tipo</th>
           <th>Motivo</th>
-          <th>Seccion</th>
-          <th>Dia / Fecha inicio</th>
+          <th>Sección</th>
+          <th>Día / Fecha inicio</th>
           <th>Hora inicio</th>
           <th>Hora fin / Fecha fin</th>
           <th></th>
@@ -124,6 +122,5 @@
   </div>
 
 </main>
-<script src="/js/session-guard.js?v=3"></script>
 </body>
 </html>
