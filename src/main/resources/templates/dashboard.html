@@ -43,6 +43,7 @@
   <div class="card">
     <h3>Reservas</h3>
     <div th:if="${param.ok}" class="ok">Operacion realizada correctamente</div>
+    <div th:if="${ok}" class="ok" th:text="${ok}"></div>
     <div th:if="${error}" class="error" th:text="${error}"></div>
     <table>
       <thead>
