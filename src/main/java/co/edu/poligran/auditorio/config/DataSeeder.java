@@ -3,6 +3,7 @@ package co.edu.poligran.auditorio.config;
 import co.edu.poligran.auditorio.model.*;
 import co.edu.poligran.auditorio.repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -21,14 +22,21 @@ public class DataSeeder implements CommandLineRunner {
     private final UsuarioRepository usuarios;
     private final TarifaRepository  tarifas;
     private final BloqueoRepository bloqueos;
-    private final PasswordEncoder pe;
+    private final PasswordEncoder   pe;
+    private final JdbcTemplate      jdbc;
 
-    public DataSeeder(UsuarioRepository u, TarifaRepository t, BloqueoRepository b, PasswordEncoder pe) {
-        this.usuarios = u; this.tarifas = t; this.bloqueos = b; this.pe = pe;
+    public DataSeeder(UsuarioRepository u, TarifaRepository t, BloqueoRepository b,
+                      PasswordEncoder pe, JdbcTemplate jdbc) {
+        this.usuarios = u; this.tarifas = t; this.bloqueos = b;
+        this.pe = pe; this.jdbc = jdbc;
     }
 
     @Override
     public void run(String... args) {
+        // ── Migración: COMPLETO → B3 ───────────────────────────────────────
+        // Si la BD tiene registros antiguos con seccion='COMPLETO', los convierte a 'B3'
+        migrarCompletoAB3();
+
         // ── Administrador ──────────────────────────────────────────────────
         seedIfAbsent("admin@poligran.edu.co",
                 "Admin Auditorio", "1000000001", "admin123",
@@ -90,8 +98,30 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
+     * Migración automática: convierte registros con seccion='COMPLETO' a 'B3'
+     * en todas las tablas que usan la columna seccion.
+     */
+    private void migrarCompletoAB3() {
+        int reservasMigradas = jdbc.update(
+                "UPDATE reservas SET seccion = 'B3' WHERE seccion = 'COMPLETO'");
+        int bloqueosMigrados = jdbc.update(
+                "UPDATE bloqueos SET seccion = 'B3' WHERE seccion = 'COMPLETO'");
+        int tarifasMigradas  = jdbc.update(
+                "UPDATE tarifas  SET seccion = 'B3' WHERE seccion = 'COMPLETO'");
+        int tarifasEliminadas = jdbc.update(
+                "DELETE FROM tarifas WHERE seccion = 'B3' AND id NOT IN " +
+                "(SELECT id FROM (SELECT MIN(id) AS id FROM tarifas WHERE seccion = 'B3') t)");
+
+        if (reservasMigradas + bloqueosMigrados + tarifasMigradas > 0) {
+            System.out.println("[DataSeeder] Migración COMPLETO→B3: "
+                    + reservasMigradas + " reservas, "
+                    + bloqueosMigrados + " bloqueos, "
+                    + tarifasMigradas  + " tarifas actualizadas.");
+        }
+    }
+
+    /**
      * Crea el usuario solo si su correo aún no existe en la base de datos.
-     * Así funciona aunque ya haya otros usuarios registrados.
      */
     private void seedIfAbsent(String correo, String nombre, String doc, String pass,
                                Rol rol, TipoSolicitante tipoSol, TipoOperativo tipoOp) {
