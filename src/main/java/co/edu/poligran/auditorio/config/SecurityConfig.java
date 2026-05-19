@@ -12,10 +12,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.HeaderWriterLogoutHandler;
 import org.springframework.security.web.header.writers.CacheControlHeadersWriter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 
 @Configuration
 public class SecurityConfig {
@@ -73,7 +78,17 @@ public class SecurityConfig {
 
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.disable())
-                        .cacheControl(cache -> cache.disable())
+                        .cacheControl(cache -> {})
+                )
+
+                .exceptionHandling(ex -> ex
+                        .defaultAuthenticationEntryPointFor(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                                new OrRequestMatcher(
+                                        new AntPathRequestMatcher("/api/**")
+                                )
+                        )
+                        .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
                 )
 
                 .authorizeHttpRequests(auth -> auth
@@ -87,6 +102,9 @@ public class SecurityConfig {
                                 "/favicon.ico",
                                 "/api/disponibilidad"
                         ).permitAll()
+
+                        .requestMatchers("/api/session")
+                        .authenticated()
 
                         .requestMatchers("/admin/**")
                         .hasRole("ADMIN_AUDITORIO")
