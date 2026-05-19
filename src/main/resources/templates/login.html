@@ -26,14 +26,8 @@
 
     <div th:if="${param.error}" class="error">Credenciales invalidas</div>
     <div th:if="${param.logout}" class="ok">Sesion cerrada correctamente</div>
-    <div th:if="${param.expired}" class="error">
-      Tu sesion expiro. Ingresa de nuevo.
-    </div>
+    <div th:if="${param.expired}" class="error">Tu sesion fue cerrada. Ingresa de nuevo para continuar.</div>
     <div th:if="${param.registered}" class="ok">Registro exitoso, ya puedes iniciar sesion</div>
-
-    <p style="font-size:.85rem;color:#5c6772;margin-bottom:1rem;">
-      El correo no distingue mayusculas ni minusculas.
-    </p>
 
     <form method="post" action="/login" id="formLogin" autocomplete="off">
       <label for="correo">Correo</label>
@@ -47,54 +41,23 @@
       Eres externo?
       <a th:href="@{/registro}" style="color:var(--poli-cian);font-weight:600">Crea tu cuenta</a>
     </p>
+
+    <hr/>
+    <small>
+      <b style="color:var(--poli-azul)">Cuentas demo:</b><br/>
+      admin@poligran.edu.co / admin123 (Administrador Auditorio)<br/>
+      docente@poligran.edu.co / docente123 (Docente)<br/>
+      admin.staff@poligran.edu.co / staff123 (Administrativo)<br/>
+      externo@empresa.com / externo123 (Externo)<br/>
+      operativo@poligran.edu.co / ops123 (Operativo)
+    </small>
   </div>
-  </div>
+</div>
 
 <footer class="poli-footer">
-  &copy; Politecnico Grancolombiano - <span>Somos diferentes, Somos Poli.</span>
+  &copy; Politecnico Grancolombiano -
+  <span>Somos diferentes, somos Poli.</span>
 </footer>
-<script>
-(function () {
-  var CLAVE_SALIO = 'auditorio_salio';
-  var CLAVE_LOGOUT = 'auditorio_logout_ts';
-
-  function marcarSalida() {
-    try {
-      sessionStorage.setItem(CLAVE_SALIO, '1');
-      localStorage.setItem(CLAVE_LOGOUT, String(Date.now()));
-    } catch (e) {}
-  }
-
-  function limpiarSalida() {
-    try {
-      sessionStorage.removeItem(CLAVE_SALIO);
-      localStorage.removeItem(CLAVE_LOGOUT);
-    } catch (e) {}
-  }
-
-  if (location.search.indexOf('logout') >= 0 || location.search.indexOf('expired') >= 0) {
-    marcarSalida();
-  }
-
-  /* Al ver la pantalla de login (incl. Atras desde el dashboard) se cierra la sesion en servidor */
-  window.addEventListener('pageshow', function () {
-    marcarSalida();
-    fetch('/logout', { method: 'POST', credentials: 'same-origin', cache: 'no-store' }).catch(function () {});
-  });
-
-  var form = document.getElementById('formLogin');
-  if (form) {
-    form.addEventListener('submit', function () {
-      limpiarSalida();
-    });
-  }
-
-  window.addEventListener('unload', function () {});
-
-  if (window.history && window.history.replaceState) {
-    window.history.replaceState(null, '', location.pathname + location.search);
-  }
-})();
-</script>
+<script src="/js/login-session.js?v=1"></script>
 </body>
 </html>
