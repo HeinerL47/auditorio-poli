@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Mis Reservas - Auditorio Poligrán</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="/images/poli-logo.jpg" alt="Politécnico Grancolombiano"/>
+    <div>
+      <h1 th:text="${titulo}">Mis Reservas</h1>
+      <small>Politécnico Grancolombiano</small>
+    </div>
+  </div>
+  <nav>
+    <a href="/dashboard">Inicio</a>
+    <a href="/calendario">Calendario</a>
+    <a href="/mis-reservas" style="font-weight:bold">Mis Reservas</a>
+    <a sec:authorize="hasAnyRole('SOLICITANTE','ADMIN_AUDITORIO','ASISTENTE')" href="/reservas/nueva">Nueva reserva</a>
+    <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE')" href="/admin/aprobaciones">Aprobaciones</a>
+    <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE')" href="/admin/usuarios">Usuarios</a>
+    <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE','OPERATIVO')" href="/reportes">Reportes</a>
+    <form method="post" action="/logout" style="display:inline">
+      <button class="btn btn-amarillo" type="submit">Salir</button>
+    </form>
+  </nav>
+</header>
+<main>
+  <div class="card">
+    <h3 th:text="${titulo}">Mis Reservas</h3>
+    <p th:if="${#lists.isEmpty(reservas)}" style="color:#5c6772;">No hay reservas registradas.</p>
+    <table th:unless="${#lists.isEmpty(reservas)}">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Solicitante</th>
+          <th>Fecha</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+          <th>Sección</th>
+          <th>Tipo de evento</th>
+          <th>Estado</th>
+          <th>Costo</th>
+          <th>Ver detalle</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="r : ${reservas}">
+          <td th:text="${r.id}"></td>
+          <td th:text="${r.solicitante.nombre}"></td>
+          <td th:text="${#temporals.format(r.inicio,'yyyy-MM-dd')}"></td>
+          <td th:text="${#temporals.format(r.inicio,'HH:mm')}"></td>
+          <td th:text="${#temporals.format(r.fin,'HH:mm')}"></td>
+          <td th:text="${r.seccion.label}"></td>
+          <td th:text="${r.tipoEvento}"></td>
+          <td><span class="badge" th:classappend="${'b-' + r.estado}" th:text="${r.estado}"></span></td>
+          <td th:text="${r.costo != null ? '$ ' + r.costo : '—'}"></td>
+          <td><a class="btn" th:href="@{|/mis-reservas/${r.id}|}">Ver detalle</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Detalle de Reserva - Auditorio Poligrán</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="/images/poli-logo.jpg" alt="Politécnico Grancolombiano"/>
+    <div>
+      <h1>Detalle de Reserva #<span th:text="${reserva.id}"></span></h1>
+      <small>Politécnico Grancolombiano</small>
+    </div>
+  </div>
+  <nav>
+    <a href="/dashboard">Inicio</a>
+    <a href="/mis-reservas">← Mis Reservas</a>
+    <a sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE')" href="/admin/aprobaciones">Aprobaciones</a>
+    <form method="post" action="/logout" style="display:inline">
+      <button class="btn btn-amarillo" type="submit">Salir</button>
+    </form>
+  </nav>
+</header>
+<main>
+  <div class="card">
+    <h3>Información de la reserva</h3>
+    <table class="tabla-detalle">
+      <tr><th>ID</th><td th:text="${reserva.id}"></td></tr>
+      <tr><th>Estado</th>
+          <td><span class="badge" th:classappend="${'b-' + reserva.estado}" th:text="${reserva.estado}"></span></td></tr>
+      <tr><th>Solicitante</th><td th:text="${reserva.solicitante.nombre}"></td></tr>
+      <tr><th>Correo</th><td th:text="${reserva.solicitante.correo}"></td></tr>
+      <tr><th>Tipo solicitante</th>
+          <td th:text="${reserva.solicitante.tipoSolicitante != null ? reserva.solicitante.tipoSolicitante : reserva.solicitante.rol}"></td></tr>
+      <tr><th>Organización</th>
+          <td th:text="${reserva.solicitante.organizacion != null ? reserva.solicitante.organizacion : '—'}"></td></tr>
+      <tr><th>Sección</th><td th:text="${reserva.seccion.label}"></td></tr>
+      <tr><th>Tipo de evento</th><td th:text="${reserva.tipoEvento}"></td></tr>
+      <tr><th>Fecha y hora inicio</th><td th:text="${#temporals.format(reserva.inicio,'yyyy-MM-dd HH:mm')}"></td></tr>
+      <tr><th>Fecha y hora fin</th><td th:text="${#temporals.format(reserva.fin,'yyyy-MM-dd HH:mm')}"></td></tr>
+      <tr><th>Duración</th>
+          <td th:text="${T(java.time.temporal.ChronoUnit).MINUTES.between(reserva.inicio,reserva.fin) + ' minutos'}"></td></tr>
+      <tr><th>Costo</th>
+          <td th:text="${reserva.costo != null ? '$ ' + reserva.costo : 'Sin costo (usuario interno)'}"></td></tr>
+      <tr><th>Creada el</th>
+          <td th:text="${reserva.creadaEn != null ? #temporals.format(reserva.creadaEn,'yyyy-MM-dd HH:mm') : '—'}"></td></tr>
+      <tr><th>Especificaciones</th>
+          <td th:text="${reserva.especificaciones != null ? reserva.especificaciones : '—'}"></td></tr>
+    </table>
+  </div>
+
+  <div class="card" th:if="${reserva.decididaEn != null}">
+    <h3>Decisión</h3>
+    <table class="tabla-detalle">
+      <tr><th>Decidida el</th>
+          <td th:text="${#temporals.format(reserva.decididaEn,'yyyy-MM-dd HH:mm')}"></td></tr>
+      <tr><th>Decidida por</th><td th:text="${reserva.decididaPor}"></td></tr>
+      <tr th:if="${reserva.motivoRechazo != null}">
+          <th>Motivo de rechazo</th><td th:text="${reserva.motivoRechazo}" style="color:#c00"></td></tr>
+    </table>
+  </div>
+
+  <div class="card" th:if="${reserva.motivoCancelacion != null}">
+    <h3>Cancelación</h3>
+    <p th:text="${reserva.motivoCancelacion}"></p>
+  </div>
+
+  <div class="card" th:if="${reserva.observaciones != null}">
+    <h3>Observaciones post-evento</h3>
+    <pre th:text="${reserva.observaciones}" style="white-space:pre-wrap;font-family:inherit"></pre>
+  </div>
+
+  <div class="card">
+    <h3>Acciones</h3>
+    <form sec:authorize="hasAnyRole('SOLICITANTE','ADMIN_AUDITORIO','ASISTENTE')"
+          th:if="${reserva.estado.name() == 'PENDIENTE' or reserva.estado.name() == 'APROBADA'}"
+          th:action="@{|/reservas/${reserva.id}/cancelar|}" method="post" style="display:inline">
+      <label>Motivo de cancelación (opcional)</label>
+      <input type="text" name="motivo" style="width:300px"/>
+      <button class="btn btn-rojo" type="submit"
+              onclick="return confirm('¿Confirmas la cancelación de esta reserva?')">Cancelar reserva</button>
+    </form>
+
+    <form sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE')"
+          th:if="${reserva.estado.name() == 'PENDIENTE'}"
+          th:action="@{|/admin/aprobar/${reserva.id}|}" method="post" style="display:inline;margin-left:10px">
+      <button class="btn btn-verde">Aprobar</button>
+    </form>
+
+    <form sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE')"
+          th:if="${reserva.estado.name() == 'PENDIENTE'}"
+          th:action="@{|/admin/rechazar/${reserva.id}|}" method="post" style="display:inline">
+      <input name="motivo" placeholder="Motivo del rechazo" required style="width:auto;display:inline-block"/>
+      <button class="btn btn-rojo">Rechazar</button>
+    </form>
+
+    <p style="margin-top:10px"><a href="/mis-reservas">← Volver a Mis Reservas</a></p>
+  </div>
+</main>
+</body>
+</html>
