@@ -13,8 +13,6 @@ import java.time.LocalTime;
 
 /**
  * Siembra los usuarios de prueba verificando cada correo individualmente.
- * De esta forma, si ya hay otros usuarios en la BD, los usuarios nuevos
- * (asistente, tecnología, etc.) se crean igualmente si no existen aún.
  */
 @Component
 public class DataSeeder implements CommandLineRunner {
@@ -33,8 +31,7 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // ── Migración: COMPLETO → B3 ───────────────────────────────────────
-        // Si la BD tiene registros antiguos con seccion='COMPLETO', los convierte a 'B3'
+        // ── Migración: COMPLETO → B3 (debe correr antes de cualquier consulta JPA) ──
         migrarCompletoAB3();
 
         // ── Administrador ──────────────────────────────────────────────────
@@ -98,31 +95,33 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * Migración automática: convierte registros con seccion='COMPLETO' a 'B3'
-     * en todas las tablas que usan la columna seccion.
+     * Migración automática: convierte registros 'COMPLETO' a 'B3'.
+     *
+     * - reservas y bloqueos: UPDATE directo (no tienen restricción UNIQUE por seccion)
+     * - tarifas: si ya existe B3, elimina la fila COMPLETO; si no existe B3, renombra COMPLETO→B3
      */
     private void migrarCompletoAB3() {
-        int reservasMigradas = jdbc.update(
-                "UPDATE reservas SET seccion = 'B3' WHERE seccion = 'COMPLETO'");
-        int bloqueosMigrados = jdbc.update(
-                "UPDATE bloqueos SET seccion = 'B3' WHERE seccion = 'COMPLETO'");
-        int tarifasMigradas  = jdbc.update(
-                "UPDATE tarifas  SET seccion = 'B3' WHERE seccion = 'COMPLETO'");
-        int tarifasEliminadas = jdbc.update(
-                "DELETE FROM tarifas WHERE seccion = 'B3' AND id NOT IN " +
-                "(SELECT id FROM (SELECT MIN(id) AS id FROM tarifas WHERE seccion = 'B3') t)");
+        int res = jdbc.update("UPDATE reservas SET seccion = 'B3' WHERE seccion = 'COMPLETO'");
+        int blq = jdbc.update("UPDATE bloqueos SET seccion = 'B3' WHERE seccion = 'COMPLETO'");
 
-        if (reservasMigradas + bloqueosMigrados + tarifasMigradas > 0) {
+        // Tarifas tiene UNIQUE(seccion): verificar antes de actualizar
+        Integer b3Existe = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM tarifas WHERE seccion = 'B3'", Integer.class);
+        int tar;
+        if (b3Existe != null && b3Existe > 0) {
+            // Ya existe B3 → simplemente borra la fila COMPLETO duplicada
+            tar = jdbc.update("DELETE FROM tarifas WHERE seccion = 'COMPLETO'");
+        } else {
+            // B3 no existe → renombra COMPLETO a B3
+            tar = jdbc.update("UPDATE tarifas SET seccion = 'B3' WHERE seccion = 'COMPLETO'");
+        }
+
+        if (res + blq + tar > 0) {
             System.out.println("[DataSeeder] Migración COMPLETO→B3: "
-                    + reservasMigradas + " reservas, "
-                    + bloqueosMigrados + " bloqueos, "
-                    + tarifasMigradas  + " tarifas actualizadas.");
+                    + res + " reservas, " + blq + " bloqueos, " + tar + " tarifas.");
         }
     }
 
-    /**
-     * Crea el usuario solo si su correo aún no existe en la base de datos.
-     */
     private void seedIfAbsent(String correo, String nombre, String doc, String pass,
                                Rol rol, TipoSolicitante tipoSol, TipoOperativo tipoOp) {
         if (!usuarios.existsByCorreoIgnoreCase(correo)) {
