@@ -20,6 +20,8 @@ public class ReservaService {
     public static final int MIN_MINUTOS     = 60;
     public static final int MIN_DIAS_ANTELACION = 7;
     public static final int MAX_DIAS_ANTELACION = 31;
+    /** Tiempo de buffer de logística antes y después de cada reserva (en minutos). */
+    public static final int BUFFER_LOGISTICA_MINUTOS = 60;
 
     private final ReservaRepository reservas;
     private final BloqueoRepository bloqueos;
@@ -97,13 +99,27 @@ public class ReservaService {
                 throw new IllegalArgumentException("Horario bloqueado por administrador: " + b.getMotivo());
         }
 
+        // Se amplía la ventana de búsqueda con el buffer de logística (±1 h)
+        // para garantizar que haya tiempo de montaje/desmontaje entre eventos.
+        LocalDateTime inicioConBuffer = inicio.minusMinutes(BUFFER_LOGISTICA_MINUTOS);
+        LocalDateTime finConBuffer    = fin.plusMinutes(BUFFER_LOGISTICA_MINUTOS);
+
         List<Reserva> sol = excludeId == null
-                ? reservas.findSolapadas(inicio, fin)
-                : reservas.findSolapadasExcluyendo(inicio, fin, excludeId);
+                ? reservas.findSolapadas(inicioConBuffer, finConBuffer)
+                : reservas.findSolapadasExcluyendo(inicioConBuffer, finConBuffer, excludeId);
+
         for (Reserva otra : sol) {
-            if (seccionesIncompatibles(otra.getSeccion(), seccion))
-                throw new IllegalArgumentException("Conflicto con reserva #" + otra.getId()
-                        + " (" + otra.getSeccion().getLabel() + ", " + otra.getEstado() + ")");
+            if (seccionesIncompatibles(otra.getSeccion(), seccion)) {
+                boolean solapanDirectamente =
+                        inicio.isBefore(otra.getFin()) && fin.isAfter(otra.getInicio());
+                String motivo = solapanDirectamente
+                        ? "Conflicto de horario"
+                        : "Buffer de logística (1 h requerida antes/después)";
+                throw new IllegalArgumentException(motivo + " con reserva #" + otra.getId()
+                        + " [" + otra.getSeccion().getLabel() + " "
+                        + otra.getInicio().toLocalTime() + "–" + otra.getFin().toLocalTime()
+                        + ", " + otra.getEstado() + "]");
+            }
         }
     }
 
