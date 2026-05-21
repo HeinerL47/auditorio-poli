@@ -8,8 +8,47 @@
   <meta http-equiv="Expires" content="0"/>
   <title>Iniciar sesión - Auditorio Poli</title>
   <link rel="stylesheet" th:href="@{/css/styles.css(v=2)}"/>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    .login-bg {
+      position: fixed;
+      inset: 0;
+      background: url('/images/poli-edificio.jpg') center center / cover no-repeat;
+      z-index: 0;
+    }
+    /* Capa blanca semitransparente para suavizar la imagen */
+    .login-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.62);
+    }
+    body > header,
+    .login-wrapper,
+    footer.poli-footer {
+      position: relative;
+      z-index: 1;
+    }
+    /* Refuerzo de sombra en header para legibilidad sobre fondo */
+    body > header {
+      box-shadow: 0 2px 12px rgba(15, 56, 90, 0.18);
+    }
+    /* La tarjeta de login con sombra más pronunciada */
+    .login-box {
+      box-shadow: 0 8px 32px rgba(15, 56, 90, 0.20), 0 2px 8px rgba(0,0,0,0.10);
+      background: rgba(255, 255, 255, 0.97);
+    }
+  </style>
 </head>
 <body>
+
+<!-- Fondo con imagen del edificio Poli -->
+<div class="login-bg"></div>
+
 <header>
   <div class="brand">
     <img th:src="@{/images/poli-logo.jpg(v=2)}" src="/images/poli-logo.jpg" alt="Politécnico Grancolombiano"/>

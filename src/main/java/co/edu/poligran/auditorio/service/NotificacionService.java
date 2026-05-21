@@ -121,7 +121,14 @@ public class NotificacionService {
         String asunto = "Reserva #" + r.getId() + " - " + estado;
         String mensaje;
         if ("APROBADA".equals(estado)) {
-            mensaje = "Tu reserva ha sido <b>aprobada</b>. Recibiras un recordatorio una hora antes del evento.";
+            mensaje = "Confirmo reserva; recuerda que, si requieres apoyo de medios audiovisuales, debes cargar la solicitud en la plataforma " +
+                      "(comparto enlace); las solicitudes que no estén registradas por este medio no podrán ser atendidas.<br/><br/>" +
+                      "<a href=\"https://servicedesk.poligran.edu.co/servicedesk/customer/portal/11/group/73\" " +
+                      "style=\"color:#1FB2DE;font-weight:700;word-break:break-all;\">" +
+                      "https://servicedesk.poligran.edu.co/servicedesk/customer/portal/11/group/73</a><br/><br/>" +
+                      "Así mismo, relacionar los visitantes al correo " +
+                      "<a href=\"mailto:visitantespolimed@poligran.edu.co\" style=\"color:#1FB2DE;font-weight:700;\">visitantespolimed@poligran.edu.co</a>." +
+                      "<br/><br/>Recibirás un recordatorio una hora antes del evento.";
         } else if ("RECHAZADA".equals(estado)) {
             String motivo = r.getMotivoRechazo();
             if (motivo != null && !motivo.isBlank()) {
