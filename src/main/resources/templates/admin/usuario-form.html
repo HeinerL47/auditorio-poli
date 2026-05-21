@@ -54,19 +54,20 @@
       <label>Rol *</label>
       <select name="rol" id="rol" required onchange="toggleSubTipo()">
         <option value="">-- Seleccione --</option>
-        <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"
+        <option th:each="r : ${roles}"
+                th:value="${r.name()}"
+                th:text="${r.label}"
                 th:selected="${usuario.rol != null and usuario.rol == r}"></option>
       </select>
 
       <!-- SUB-ROL SOLICITANTE -->
       <div id="bloque-solicitante" style="display:none">
-        <label id="lblTipoSol">Tipo de Solicitante *</label>
+        <label>Tipo de Solicitante *</label>
         <select name="tipoSolicitante" id="tipoSolicitante">
           <option value="">-- Seleccione --</option>
-          <option th:each="t : ${tiposSolicitante}" th:value="${t}"
-                  th:text="${t == T(co.edu.poligran.auditorio.model.TipoSolicitante).DOCENTE} ? 'Docente' :
-                            (t == T(co.edu.poligran.auditorio.model.TipoSolicitante).ADMINISTRATIVO) ? 'Administrativo' :
-                            'Agente Externo'"
+          <option th:each="t : ${tiposSolicitante}"
+                  th:value="${t.name()}"
+                  th:text="${t.label}"
                   th:selected="${usuario.tipoSolicitante != null and usuario.tipoSolicitante == t}"></option>
         </select>
         <small style="color:#666">
@@ -77,15 +78,12 @@
 
       <!-- SUB-ROL OPERATIVO -->
       <div id="bloque-operativo" style="display:none">
-        <label id="lblTipoOp">Sub-rol Operativo *</label>
+        <label>Sub-rol Operativo *</label>
         <select name="tipoOperativo" id="tipoOperativo">
           <option value="">-- Seleccione --</option>
-          <option th:each="t : ${tiposOperativo}" th:value="${t}"
-                  th:text="${t == T(co.edu.poligran.auditorio.model.TipoOperativo).ASISTENTE} ? 'Asistente (mismos permisos que Admin)' :
-                            (t == T(co.edu.poligran.auditorio.model.TipoOperativo).TECNOLOGIA) ? 'Tecnología' :
-                            (t == T(co.edu.poligran.auditorio.model.TipoOperativo).AUDIOVISUAL) ? 'Audiovisual' :
-                            (t == T(co.edu.poligran.auditorio.model.TipoOperativo).INFRAESTRUCTURA) ? 'Infraestructura' :
-                            'Operaciones'"
+          <option th:each="t : ${tiposOperativo}"
+                  th:value="${t.name()}"
+                  th:text="${t.label}"
                   th:selected="${usuario.tipoOperativo != null and usuario.tipoOperativo == t}"></option>
         </select>
         <small style="color:#666">

@@ -38,6 +38,13 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
                                                @Param("hasta") LocalDateTime hasta,
                                                @Param("seccion") Seccion seccion);
 
+    @Query("SELECT r FROM Reserva r WHERE r.estado IN ('APROBADA','PENDIENTE') " +
+            "AND r.inicio < :hasta AND r.fin > :desde " +
+            "AND r.solicitante = :solicitante")
+    List<Reserva> findActivasEnRangoPorSolicitante(@Param("desde") LocalDateTime desde,
+                                                   @Param("hasta") LocalDateTime hasta,
+                                                   @Param("solicitante") Usuario solicitante);
+
     List<Reserva> findByEstadoAndInicioBetween(EstadoReserva estado, LocalDateTime desde, LocalDateTime hasta);
 
     @Query("SELECT r FROM Reserva r WHERE r.inicio >= :desde AND r.inicio < :hasta")

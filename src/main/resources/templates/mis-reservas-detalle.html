@@ -33,7 +33,7 @@
       <tr><th>Solicitante</th><td th:text="${reserva.solicitante.nombre}"></td></tr>
       <tr><th>Correo</th><td th:text="${reserva.solicitante.correo}"></td></tr>
       <tr><th>Tipo solicitante</th>
-          <td th:text="${reserva.solicitante.tipoSolicitante != null ? reserva.solicitante.tipoSolicitante : reserva.solicitante.rol}"></td></tr>
+          <td th:text="${reserva.solicitante.tipoSolicitante != null ? reserva.solicitante.tipoSolicitante.label : reserva.solicitante.rol.label}"></td></tr>
       <tr><th>Organización</th>
           <td th:text="${reserva.solicitante.organizacion != null ? reserva.solicitante.organizacion : '—'}"></td></tr>
       <tr><th>Sección</th><td th:text="${reserva.seccion.label}"></td></tr>
@@ -41,7 +41,7 @@
       <tr><th>Fecha y hora inicio</th><td th:text="${#temporals.format(reserva.inicio,'yyyy-MM-dd HH:mm')}"></td></tr>
       <tr><th>Fecha y hora fin</th><td th:text="${#temporals.format(reserva.fin,'yyyy-MM-dd HH:mm')}"></td></tr>
       <tr><th>Duración</th>
-          <td th:text="${T(java.time.temporal.ChronoUnit).MINUTES.between(reserva.inicio,reserva.fin) + ' minutos'}"></td></tr>
+          <td th:text="${(reserva.fin.toLocalTime().toSecondOfDay() - reserva.inicio.toLocalTime().toSecondOfDay()) / 60 + ' minutos'}"></td></tr>
       <tr><th>Costo</th>
           <td th:text="${reserva.costo != null ? '$ ' + reserva.costo : 'Sin costo (usuario interno)'}"></td></tr>
       <tr><th>Creada el</th>

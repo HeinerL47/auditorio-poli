@@ -200,5 +200,8 @@ public class ReservaService {
     public List<Reserva> listarDe(Usuario u)       { return reservas.findBySolicitante(u); }
     public List<Reserva> listarPendientes()        { return reservas.findByEstado(EstadoReserva.PENDIENTE); }
     public List<Reserva> activasEnRango(LocalDateTime d, LocalDateTime h) { return reservas.findActivasEnRango(d, h); }
+    public List<Reserva> activasEnRangoDe(LocalDateTime d, LocalDateTime h, Usuario u) {
+        return reservas.findActivasEnRangoPorSolicitante(d, h, u);
+    }
     public Reserva porId(Long id)                  { return reservas.findById(id).orElseThrow(); }
 }

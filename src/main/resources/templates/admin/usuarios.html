@@ -41,11 +41,11 @@
           <td th:text="${u.correo}"></td>
           <td th:text="${u.telefono}"></td>
           <td th:text="${u.organizacion}"></td>
-          <td><span class="badge" th:text="${u.rol}"></span></td>
+          <td><span class="badge" th:text="${u.rol.label}"></span></td>
           <td>
-            <span th:if="${u.tipoSolicitante != null}" th:text="${u.tipoSolicitante}"></span>
+            <span th:if="${u.tipoSolicitante != null}" th:text="${u.tipoSolicitante.label}"></span>
             <span th:if="${u.tipoOperativo != null}"
-                  th:text="${u.tipoOperativo}"
+                  th:text="${u.tipoOperativo.label}"
                   th:classappend="${u.tipoOperativo.name() == 'ASISTENTE'} ? 'badge' : ''"></span>
             <span th:if="${u.tipoSolicitante == null and u.tipoOperativo == null}">—</span>
           </td>

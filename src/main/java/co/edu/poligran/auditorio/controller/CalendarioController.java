@@ -3,9 +3,14 @@ package co.edu.poligran.auditorio.controller;
 import co.edu.poligran.auditorio.model.Bloqueo;
 import co.edu.poligran.auditorio.model.EstadoReserva;
 import co.edu.poligran.auditorio.model.Reserva;
+import co.edu.poligran.auditorio.model.Rol;
 import co.edu.poligran.auditorio.model.Seccion;
+import co.edu.poligran.auditorio.model.Usuario;
 import co.edu.poligran.auditorio.repository.BloqueoRepository;
 import co.edu.poligran.auditorio.service.ReservaService;
+import co.edu.poligran.auditorio.service.UsuarioService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,10 +31,12 @@ public class CalendarioController {
 
     private final ReservaService reservas;
     private final BloqueoRepository bloqueos;
+    private final UsuarioService usuarios;
 
-    public CalendarioController(ReservaService r, BloqueoRepository b) {
-        this.reservas = r;
-        this.bloqueos = b;
+    public CalendarioController(ReservaService r, BloqueoRepository b, UsuarioService u) {
+        this.reservas  = r;
+        this.bloqueos  = b;
+        this.usuarios  = u;
     }
 
     @GetMapping("/calendario")
@@ -42,17 +49,27 @@ public class CalendarioController {
     @ResponseBody
     public List<Map<String, Object>> disponibilidad(@RequestParam String start,
                                                     @RequestParam String end,
-                                                    @RequestParam(required = false) Seccion seccion) {
+                                                    @RequestParam(required = false) Seccion seccion,
+                                                    @AuthenticationPrincipal UserDetails ud) {
         LocalDateTime d = parseFecha(start);
         LocalDateTime h = parseFecha(end);
 
+        Usuario usuario = usuarios.porCorreo(ud.getUsername());
+        boolean verTodo = puedeVerTodo(usuario);
+
         List<Map<String, Object>> eventos = new ArrayList<>();
 
-        reservas.activasEnRango(d, h).stream()
+        // Reservas: filtrar por usuario si es SOLICITANTE
+        List<Reserva> listaReservas = verTodo
+                ? reservas.activasEnRango(d, h)
+                : reservas.activasEnRangoDe(d, h, usuario);
+
+        listaReservas.stream()
                 .filter(r -> aplicaFiltroSeccion(r.getSeccion(), seccion))
-                .map(this::toEvento)
+                .map(r -> toEvento(r, verTodo))
                 .forEach(eventos::add);
 
+        // Bloqueos: siempre visibles para todos (muestran indisponibilidad general)
         for (Bloqueo b : bloqueos.findAll()) {
             if (!aplicaFiltroSeccion(b.getSeccion(), seccion)) continue;
             if (b.isRecurrente()) {
@@ -75,6 +92,14 @@ public class CalendarioController {
         }
 
         return eventos;
+    }
+
+    /**
+     * Los ADMIN y todos los OPERATIVOS ven todas las reservas.
+     * Los SOLICITANTES (docente, administrativo, externo) solo ven las suyas.
+     */
+    private boolean puedeVerTodo(Usuario u) {
+        return u.getRol() == Rol.ADMIN_AUDITORIO || u.getRol() == Rol.OPERATIVO;
     }
 
     /**
@@ -104,11 +129,16 @@ public class CalendarioController {
         }
     }
 
-    private Map<String, Object> toEvento(Reserva r) {
+    private Map<String, Object> toEvento(Reserva r, boolean verTodo) {
         Map<String, Object> m = new HashMap<>();
         m.put("id", "r-" + r.getId());
         String prefijo = r.getEstado() == EstadoReserva.PENDIENTE ? "[Pendiente] " : "";
-        m.put("title", prefijo + r.getSeccion().getLabel() + " \u2014 " + r.getTipoEvento());
+        // Si es admin/operativo muestra el nombre del solicitante; si es el propio solicitante muestra "Mi reserva"
+        String titulo = verTodo
+                ? prefijo + r.getSeccion().getLabel() + " \u2014 " + r.getTipoEvento()
+                  + " (" + r.getSolicitante().getNombre() + ")"
+                : prefijo + r.getSeccion().getLabel() + " \u2014 " + r.getTipoEvento();
+        m.put("title", titulo);
         m.put("start", r.getInicio().toString());
         m.put("end", r.getFin().toString());
         m.put("color", colorPorSeccion(r.getSeccion().name(), r.getEstado()));
@@ -141,9 +171,6 @@ public class CalendarioController {
             case "B3" -> "#cf222e";
             default   -> "#8b5cf6";
         };
-        if (estado == EstadoReserva.PENDIENTE) {
-            return base + "99";
-        }
-        return base;
+        return estado == EstadoReserva.PENDIENTE ? base + "99" : base;
     }
 }

@@ -33,12 +33,12 @@
   <div class="card">
     <h2>Hola, <span th:text="${usuario.nombre}"></span></h2>
     <p>
-      Rol: <b th:text="${usuario.rol}"></b>
+      Rol: <b th:text="${usuario.rol.label}"></b>
       <span th:if="${usuario.tipoSolicitante != null}">
-        &mdash; Tipo: <b th:text="${usuario.tipoSolicitante}"></b>
+        &mdash; Tipo: <b th:text="${usuario.tipoSolicitante.label}"></b>
       </span>
       <span th:if="${usuario.tipoOperativo != null}">
-        &mdash; Sub-rol: <b th:text="${usuario.tipoOperativo}"></b>
+        &mdash; Sub-rol: <b th:text="${usuario.tipoOperativo.label}"></b>
       </span>
     </p>
     <div sec:authorize="hasAnyRole('ADMIN_AUDITORIO','ASISTENTE')">
