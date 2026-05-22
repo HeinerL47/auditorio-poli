@@ -12,164 +12,175 @@
   <link rel="stylesheet" th:href="@{/css/styles.css(v=2)}"/>
 
   <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
+
+    *, *::before, *::after{
+      box-sizing:border-box;
     }
 
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
+    html, body{
+      height:100%;
+      margin:0;
+      padding:0;
+      overflow:hidden;
     }
 
-    /* ───────── Split layout ───────── */
-    .split-screen {
-      display: flex;
-      height: 100vh;
-      width: 100vw;
+    /* Split */
+    .split-screen{
+      display:flex;
+      height:100vh;
+      width:100vw;
     }
 
     /* IZQUIERDA */
-    .split-left {
-      flex: 1 1 60%;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
+
+    .split-left{
+      flex:1 1 60%;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .bg-image{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
     }
 
     /* DERECHA */
-    .split-right {
-      flex: 0 0 420px;
-      width: 420px;
-      background: #0F385A;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 48px 40px;
-      box-shadow: -6px 0 32px rgba(0,0,0,0.25);
+
+    .split-right{
+      flex:0 0 420px;
+      width:420px;
+      background:#0F385A;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      padding:48px 40px;
+      box-shadow:-6px 0 32px rgba(0,0,0,.25);
     }
 
-    .login-logo {
-      width: 120px;
-      height: auto;
-      margin-bottom: 20px;
+    .login-logo{
+      width:120px;
+      height:auto;
+      margin-bottom:20px;
     }
 
-    .split-right h2 {
-      color: white;
-      font-size: 1.55rem;
-      font-weight: 700;
-      margin-bottom: 28px;
-      text-align: center;
+    .split-right h2{
+      color:#fff;
+      font-size:1.55rem;
+      font-weight:700;
+      margin:0 0 28px;
+      text-align:center;
     }
 
     /* Alertas */
 
-    .error {
-      background: rgba(236,6,119,.18);
-      border: 1px solid #EC0677;
-      color: white;
-      border-radius: 6px;
-      padding: 10px;
-      margin-bottom: 14px;
-      width: 100%;
-      text-align: center;
+    .error{
+      background:rgba(236,6,119,.18);
+      border:1px solid #EC0677;
+      color:white;
+      border-radius:6px;
+      padding:10px 14px;
+      width:100%;
+      text-align:center;
+      margin-bottom:14px;
     }
 
-    .ok {
-      background: rgba(166,206,56,.18);
-      border: 1px solid #A6CE38;
-      color: white;
-      border-radius: 6px;
-      padding: 10px;
-      margin-bottom: 14px;
-      width: 100%;
-      text-align: center;
+    .ok{
+      background:rgba(166,206,56,.18);
+      border:1px solid #A6CE38;
+      color:white;
+      border-radius:6px;
+      padding:10px 14px;
+      width:100%;
+      text-align:center;
+      margin-bottom:14px;
     }
 
-    /* Formulario */
+    /* Form */
 
-    form {
-      width: 100%;
+    form{
+      width:100%;
     }
 
-    label {
-      display: block;
-      color: #b8d4e8;
-      font-size: .83rem;
-      font-weight: 600;
-      margin-bottom: 5px;
-      text-transform: uppercase;
+    label{
+      display:block;
+      color:#b8d4e8;
+      font-size:.83rem;
+      font-weight:600;
+      margin-bottom:5px;
+      text-transform:uppercase;
     }
 
     input[type="email"],
-    input[type="password"] {
+    input[type="password"]{
 
-      width: 100%;
-      background: rgba(255,255,255,.10);
-      border: 1.5px solid rgba(255,255,255,.22);
-      border-radius: 7px;
-      color: white;
-      font-size: .97rem;
-      padding: 11px 14px;
-      margin-bottom: 18px;
-      outline: none;
-      transition: .2s;
+      width:100%;
+      background:rgba(255,255,255,.10);
+      border:1.5px solid rgba(255,255,255,.22);
+      border-radius:7px;
+      color:white;
+      font-size:.97rem;
+      padding:11px 14px;
+      margin-bottom:18px;
+      outline:none;
+      transition:.2s;
     }
 
-    input::placeholder {
-      color: rgba(255,255,255,.4);
+    input::placeholder{
+      color:rgba(255,255,255,.4);
     }
 
-    input:focus {
-      border-color: #1FB2DE;
-      background: rgba(255,255,255,.15);
+    input:focus{
+      border-color:#1FB2DE;
+      background:rgba(255,255,255,.15);
     }
 
-    .btn-login {
-      width: 100%;
-      background: #1FB2DE;
-      color: white;
-      border: none;
-      border-radius: 7px;
-      padding: 13px;
-      font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: .2s;
+    .btn-login{
+      width:100%;
+      background:#1FB2DE;
+      color:#fff;
+      border:none;
+      border-radius:7px;
+      padding:13px;
+      font-size:1rem;
+      font-weight:700;
+      cursor:pointer;
+      transition:.2s;
     }
 
-    .btn-login:hover {
-      background: #17a0c9;
+    .btn-login:hover{
+      background:#17a0c9;
     }
 
-    .btn-login:active {
-      transform: scale(.98);
+    .btn-login:active{
+      transform:scale(.98);
     }
 
-    .link-registro {
-      margin-top: 18px;
-      color: rgba(255,255,255,.65);
-      text-align: center;
+    .link-registro{
+      display:block;
+      margin-top:18px;
+      color:rgba(255,255,255,.65);
+      text-align:center;
     }
 
-    .link-registro a {
-      color: #FBAF17;
-      text-decoration: none;
-      font-weight: bold;
+    .link-registro a{
+      color:#FBAF17;
+      font-weight:700;
+      text-decoration:none;
     }
 
-    .link-registro a:hover {
-      text-decoration: underline;
+    .link-registro a:hover{
+      text-decoration:underline;
     }
 
-    .split-right-footer {
-      margin-top: 32px;
-      color: rgba(255,255,255,.35);
-      font-size: .74rem;
-      text-align: center;
+    .split-right-footer{
+      margin-top:32px;
+      color:rgba(255,255,255,.35);
+      font-size:.74rem;
+      text-align:center;
+      line-height:1.5;
     }
 
     /* Responsive */
@@ -186,6 +197,7 @@
       }
 
       .split-left{
+        flex:0 0 220px;
         height:220px;
       }
 
@@ -193,27 +205,30 @@
         width:100%;
         padding:36px 24px;
       }
-
     }
 
   </style>
-</head>
 
+</head>
 <body>
 
 <div class="split-screen">
 
-  <!-- Imagen izquierda -->
+  <!-- IZQUIERDA -->
 
-  <div class="split-left"
-       th:style="|background-image:url('@{/images/poli-edificio-v2.jpg}')|">
+  <div class="split-left">
+
+    <img th:src="@{/images/poli-edificio.jpg}"
+         alt="Edificio Poli"
+         class="bg-image"/>
+
   </div>
 
-  <!-- Login derecha -->
+  <!-- DERECHA -->
 
   <div class="split-right">
 
-    <img th:src="@{/images/poli-logo.jpg(v=2)}"
+    <img th:src="@{/images/poli-logo.jpg}"
          alt="Politécnico Grancolombiano"
          class="login-logo"/>
 
@@ -235,8 +250,6 @@
       Registro exitoso, ya puedes iniciar sesión
     </div>
 
-    <!-- FORMULARIO CORREGIDO -->
-
     <form method="post"
           th:action="@{/login}"
           id="formLogin"
@@ -249,7 +262,7 @@
              name="correo"
              required
              autofocus
-             placeholder="usuario@poligran.edu.co">
+             placeholder="usuario@poligran.edu.co"/>
 
       <label for="password">Contraseña</label>
 
@@ -257,7 +270,7 @@
              id="password"
              name="password"
              required
-             placeholder="••••••••">
+             placeholder="••••••••"/>
 
       <button class="btn-login" type="submit">
         Entrar
