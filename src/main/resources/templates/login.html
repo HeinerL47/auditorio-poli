@@ -25,10 +25,12 @@
       width: 100vw;
     }
 
-    /* LEFT — imagen completa sin filtros */
+    /* LEFT — imagen completa sin filtros (URL inyectada por Thymeleaf via th:style) */
     .split-left {
       flex: 1 1 60%;
-      background: url('/images/poli-edificio.jpg') center center / cover no-repeat;
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
     }
 
     /* RIGHT — panel de login */
@@ -172,7 +174,10 @@
 <div class="split-screen">
 
   <!-- IZQUIERDA: imagen del edificio sin ningún filtro -->
-  <div class="split-left"></div>
+  <!-- th:style inyecta la URL correcta para local Y Render (respeta el context-path) -->
+  <div class="split-left"
+       th:style="|background-image: url('@{/images/poli-edificio.jpg}');|"
+       style="background-image: url('/images/poli-edificio.jpg');"></div>
 
   <!-- DERECHA: formulario de login -->
   <div class="split-right">
